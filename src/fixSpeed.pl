@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 #
-# run though the roads.net file and change car speed to 50% by default
+# run through a roads.net file and reduce the car speeds to 50% (default)
 #
 # reads file from STDIN
 #
