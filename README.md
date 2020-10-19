@@ -16,7 +16,11 @@ This script creates the modified "roads.net" and "roads-EU.net" files to be used
 
 # genXroads.py
 
-This script is creating the "library.txt" file inside the "Customer Scenery/Xroads" folder. The folder is being created if it does not exist. It first scans for existing zOrtho4XP.. folders and adds an entry to the library.txt for each one to force the use of the new road.net files. Additionally it creates (actually it copies them from the simheaven library) dummy objects to "hide" the parking lots and solar panels, to also use the satellite image rather than the gray polygons.
+This script is creating the "library.txt" file inside the "Customer Scenery/Xroads" folder. The folder is being created if it does not exist. It first scans for existing zOrtho4XP.. folders and adds an entry to the library.txt for each one to force the use of the new road.net files. Additionally it creates (actually it copies them from the simheaven library) dummy objects to "hide" the parking lots and solar panels, to also use the satellite image rather than the gray autogen polygons.
 
+
+# scenery_packs.ini
+
+Make sure the Xroads folder is way on the top of your scenery_packs.ini
 
 
