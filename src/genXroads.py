@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 #
-# Creats and updates the Xroads scenery library to force Ortho4XP tiles to use 
+# Creates or updates the Xroads "Custom Scenery" library to force Ortho4XP tiles to use 
 # the "Xroads" road net files. It also removes parking ground polygons from ortho tiles.
 #
 # Create the net files using genNoRoads.py
