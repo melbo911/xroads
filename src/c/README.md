@@ -18,11 +18,13 @@ It also creates a "library.txt" file inside the "Customer Scenery/Xroads" folder
 
 Additionally it creates dummy objects and facades to "hide" the parking lots and solar panels, to also use the satellite image rather than the gray autogen polygons.
 
+The content of an optional xroads.opt is being appended to the library.txt, which allows manual additions.
+
 # Uninstall
 Simply delete the "Xroads" folder in your "Custom Scenery" folder and restart X-Plane. No other file has been changed. 
 
 # scenery_packs.ini
 
-Make sure the Xroads folder stay on the top of your scenery_packs.ini
+Make sure the Xroads folder stay on the top of your scenery_packs.ini.
 
 
