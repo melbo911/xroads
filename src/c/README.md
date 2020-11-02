@@ -7,13 +7,19 @@ To allow better control where to enable or disable these autogen roads, a librar
 During the creation of the new net files, the "speed" of the AI cars is being reduced to 70%. This makes the cars travell with a more realistic speed. The 70% is hardcoded in the code but can be modified based on own taste.
 
 
-Copy the binary correct binary (xroads.exe for Windows, xroads.mac for macOS) to your X-Plane base directory.
+# Installation
+
+Copy the correct binary (xroads.exe for Windows, xroads.mac for macOS) to your X-Plane base directory and execute it.
 
 The program creates a folder "Xroads" in your "Custome Scenery" folder. 
 Then it copies the "roads.net" and "roads-EU.net" files from the "default scenry" and modifies them on the fly.
 
-It also creates a "library.txt" file inside the "Customer Scenery/Xroads" folder. It first scans for existing zOrtho4XP folders and adds an entry to the library.txt for each one to force the use of the new road.net files. Additionally it creates dummy objects to "hide" the parking lots and solar panels, to also use the satellite image rather than the gray autogen polygons.
+It also creates a "library.txt" file inside the "Customer Scenery/Xroads" folder. It first scans for existing zOrtho4XP folders and adds an entry to the library.txt for each one to force the use of the new road.net files. 
 
+Additionally it creates dummy objects and facades to "hide" the parking lots and solar panels, to also use the satellite image rather than the gray autogen polygons.
+
+# Uninstall
+Simply delete the "Xroads" folder in your "Custom Scenery" folder and restart X-Plane. No other file has been changed. 
 
 # scenery_packs.ini
 
