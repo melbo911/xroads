@@ -42,7 +42,7 @@ Windows:
 	cl xroads
 
 
-macOS:
+macOS or Linux:
 
 	make xroads
 
