@@ -345,7 +345,7 @@ int main(int argc, char **argv) {
 
 
 /*
-     library.txt
+     library.txt example
 
 A
 800
