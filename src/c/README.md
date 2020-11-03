@@ -37,6 +37,8 @@ Make sure the Xroads folder stay on the top of your scenery_packs.ini.
 
 Windows:
 
+    requires "dirent.h"  ( i.e. from https://github.com/tronkko/dirent/blob/master/include/dirent.h )
+
 	cl xroads
 
 
