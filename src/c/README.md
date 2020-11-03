@@ -36,12 +36,14 @@ Make sure the Xroads folder stay on the top of your scenery_packs.ini.
 # Build
 
 Windows:
+
 	requires: https://github.com/tronkko/dirent/blob/master/include/dirent.h
 
 	cl xroads
 
 
 macOS:
+
 	make xroads
 
 
