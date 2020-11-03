@@ -5,7 +5,7 @@ Xroads is a X-Plane 11 library which improves the realistic touch of the Ortho4X
 
 To allow better control where to enable or disable these autogen roads, a library.txt file gets generated, which contains the coordinates of all available Ortho4XP tiles. These tiles will then be using the "hidden roads". Locations for which we do not have a Ortho tile, the autogen roads are still being shown.
 
-During the creation of the new net files, the "speed" of the AI cars is being reduced to 70%. This makes the cars travell with a more realistic speed. The 70% is hardcoded in the code but can be modified based on own taste.
+During the creation of the new net files, the "speed" of the AI cars is being reduced to 70%. This makes the cars travel with a more realistic speed. The 70% is hardcoded in the code but can be modified based on own taste.
 
 After installation you simply run the binary again if Ortho tiles have been added or deleted. The program will then just update the library.txt accordingly.
 
@@ -14,11 +14,11 @@ After installation you simply run the binary again if Ortho tiles have been adde
 
 Copy the correct binary (xroads.exe for Windows, xroads.mac for macOS) to your X-Plane base directory and execute it.
 
-The program creates a folder "Xroads" in your "Custome Scenery" folder.  Then it copies the "roads.net" and "roads-EU.net" files from the "default scenry" and modifies them on the fly.
+The program creates a folder "Xroads" in your "Custom Scenery" folder.  Then it copies the "roads.net" and "roads-EU.net" files from the "default scenery" and modifies them on the fly.
 
-It also creates a "library.txt" file inside the "Customer Scenery/Xroads" folder. Therfor it scans for existing zOrtho4XP folders and adds an entry to the library.txt for each one it finds to force the use of the new road.net files. 
+It also creates a "library.txt" file inside the "Custom Scenery/Xroads" folder. Therefor it scans for existing zOrtho4XP folders and adds an entry to the library.txt for each one it finds to force the use of the new road.net files. 
 
-To improve the great X-Europe even more, it creates dummy objects and facades to "hide" the parking lots and solar panels, to also use the satellite image rather than the gray autogen polygons. 
+To improve the great X-Europe scenery even more, it creates dummy objects and facades to "hide" the parking lots and solar panels, to also use the satellite image rather than the gray autogen polygons. 
 
 The content of an optional xroads.opt is being appended to the library.txt, which allows manual additions.
 
