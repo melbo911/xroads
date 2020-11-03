@@ -1,6 +1,8 @@
 /*
 #
-# melbo @ x-plane.org
+# melbo @ https://x-plane.org
+#
+# 20201103 - v 0.8
 #
 */
 
@@ -28,21 +30,21 @@
 #include <string.h>
 #include <sys/types.h>
 
-#define defSpeed 70
+#define defSpeed 70	/*  reduce speed of IA cars to 70 % */
 #define MAX_TXT 1024
 #define MAX_WRD 1024
 
-char *words[MAX_WRD];
+#define XSCENERYDIR "./Custom Scenery"
+#define XROADSDIR XSCENERYDIR"/Xroads"
+#define XROADS XROADSDIR"/1000_roads"
+#define XTEXTURES XROADS"/textures"
+#define XOBJECTS XROADSDIR"/objects"
+#define XLIB XROADSDIR"/library.txt"
+#define XBLANKFAC XOBJECTS"/blank.fac"
+#define XBLANKOBJ XOBJECTS"/blank.obj"
+#define DEFROADS "Resources/default scenery/1000 roads"
 
-char xpDir[MAX_TXT];
-char xSceneryDir[MAX_TXT];
-char xRoadsDir[MAX_TXT];
-char xRoads[MAX_TXT];
-char xObjects[MAX_TXT];
-char xLib[MAX_TXT];
-char defRoads[MAX_TXT];
-char xBlankFac[MAX_TXT];
-char xBlankObj[MAX_TXT];
+char *words[MAX_WRD];
 
 /*-----------------------------------------------------------------*/
 
@@ -138,58 +140,16 @@ int isDir(char *s) {
 
 /*-----------------------------------------------------------------*/
 
-int read_messages(char *f)        /* quick and dirty file read */
-{
-    FILE *fp;
-    if ( (fp = fopen(f,"r")) ) {
-/*
-       fgets(end, MAX_TXT, fp);
-       strip(end);
-*/
-       return(0);
-    } else {
-       printf("cannot open %s\n",f);
-       return(9);
-    }
-}
-
-/*-----------------------------------------------------------------*/
-
-void initVars() {
-
-   strcpy(xSceneryDir,xpDir);
-   strcat(xSceneryDir,"/Custom Scenery");
-
-   strcpy(xRoadsDir,xSceneryDir);
-   strcat(xRoadsDir,"/zRoads");
-
-   strcpy(xLib,xRoadsDir);
-   strcat(xLib,"/library.txt");
-
-   strcpy(xObjects,xRoadsDir);
-   strcat(xObjects,"/objects");
-
-   strcpy(xRoads,xRoadsDir);
-   strcat(xRoads,"/1000_roads");
-
-   strcpy(xBlankFac,xObjects);
-   strcat(xBlankFac,"/blank.fac");
-
-   strcpy(xBlankObj,xObjects);
-   strcat(xBlankObj,"/blank.obj");
-
-   strcpy(defRoads,xpDir);
-   strcat(defRoads,"/Resources/default scenery/1000 roads");
-
-}
-/*-----------------------------------------------------------------*/
-
 int genBlankFac() {
    FILE *fp;
-   if ( (fp = fopen(xBlankFac,"w")) != NULL ) {
-      fputs("A\n800\nFACADE\n",fp);
-      fclose(fp);
-      return(0);
+   if ( ! isFile(XBLANKFAC) ) {
+      if ( (fp = fopen(XBLANKFAC,"w")) != NULL ) {
+         fputs("A\n800\nFACADE\n",fp);
+         fclose(fp);
+         return(0);
+      }
+   } else {
+      printf("%s already exists\n",XBLANKFAC);
    }
    return(1);
 }
@@ -198,10 +158,14 @@ int genBlankFac() {
 
 int genBlankObj() {
    FILE *fp;
-   if ( (fp = fopen(xBlankObj,"w")) != NULL ) {
-      fputs("A\n800\nOBJ\n",fp);
-      fclose(fp);
-      return(0);
+   if ( ! isFile(XBLANKOBJ) ) {
+      if ( (fp = fopen(XBLANKOBJ,"w")) != NULL ) {
+         fputs("A\n800\nOBJ\n",fp);
+         fclose(fp);
+         return(0);
+      }
+   } else {
+      printf("%s already exists\n",XBLANKOBJ);
    }
    return(1);
 }
@@ -209,24 +173,27 @@ int genBlankObj() {
 /*-----------------------------------------------------------------*/
 
 /*
-zOrtho4XP_+51-011    >  REGION_RECT -011 +51 -011 +51
-*/
 
-/*-----------------------------------------------------------------*/
+create library.txt and add all found Ortho4XP tiles
+
+zOrtho4XP_+51-011    >  REGION_RECT -011 +51 -011 +51
+
+*/
 
 int genLibrary() {
    FILE *fp;
+   FILE *opt;
    DIR *d;
    struct dirent *dir;
 
    char lon[8];
    char lat[8];
-   char buf[100];
+   char buf[MAX_TXT];
 
-   if ( (fp = fopen(xLib,"w")) != NULL ) {
+   if ( (fp = fopen(XLIB,"w")) != NULL ) {
       fputs("A\n800\nLIBRARY\n\nREGION_DEFINE Xroads\n",fp);
 
-      d = opendir(xSceneryDir);
+      d = opendir(XSCENERYDIR);
       if (d) {
          while ((dir = readdir(d)) != NULL) {
             if( strstr(dir->d_name,"zOrtho4XP_") ) {
@@ -245,6 +212,14 @@ int genLibrary() {
       fputs("\nREGION Xroads\nEXPORT_EXCLUDE lib/g10/roads.net 1000_roads/roads.net\nEXPORT_EXCLUDE lib/g10/roads_EU.net 1000_roads/roads_EU.net\n",fp);
 
       fputs("EXPORT_EXCLUDE simheaven/ground/parking_cars.fac    objects/blank.fac\nEXPORT_EXCLUDE simheaven/ground/parking_trucks.fac  objects/blank.fac\nEXPORT_EXCLUDE simheaven/ground/solar_panel.obj     objects/blank.obj\n",fp);
+
+      /*  read optional add ons to library */
+      if ( (opt = fopen("xroads.opt","r")) ) {
+         while ( fgets(buf, MAX_TXT, opt) != NULL ) {
+            fputs(buf,fp);
+         }
+         fclose(opt);
+      }
       fclose(fp);
       return(0);
    }
@@ -264,8 +239,8 @@ int genFile(char *s) {
     int keep = 0;
     int n = 0;
 
-    sprintf(infile,"%s/%s",defRoads,s);
-    sprintf(outfile,"%s/%s",xRoads,s);
+    sprintf(infile,"%s/%s",DEFROADS,s);
+    sprintf(outfile,"%s/%s",XROADS,s);
     if ( ! isFile(outfile) ) {
        if ( (in = fopen(infile,"r")) ) {
           if ( (out = fopen(outfile,"w")) ) {
@@ -319,33 +294,47 @@ int genFile(char *s) {
     }
 }
 
-
 /*-----------------------------------------------------------------*/
 
 int main(int argc, char **argv) {
 
-#ifdef _WIN32
-   GetCurrentDirectory(MAX_TXT,xpDir);
-#else
-   strcpy(xpDir,dirname(argv[0]));
-#endif
+   char tmp[256];
 
-   initVars();
-
-   printf("xRoadsDir = %s\n",xRoadsDir);
-
-   if ( ! isDir(xRoadsDir) ) {
-      if ( mkdir(xRoadsDir,0755) ) {
-          printf("cannot create %s in Custom Scenery\n",xRoadsDir);
+   if ( ! isDir(XROADSDIR) ) {
+      if ( mkdir(XROADSDIR,0755) ) {
+         printf("ERROR: cannot create %s\n",XROADSDIR);
+         return(-1);
       } else {
-         printf("%s created \n",xRoadsDir);
+         printf("%s created\n",XROADSDIR);
       }
    }
-   mkdir(xRoads,0755);
-   mkdir(xObjects,0755);
+
+   if ( ! isDir(XROADS) ) {
+      mkdir(XROADS,0755);
+   } else {
+      printf("%s already exists\n",XROADS);
+   }
+
+   if ( ! isFile(XTEXTURES"/bridges.dds") ) {
+#ifdef _WIN32
+      sprintf(tmp,"mklink /j \"%s\" \""DEFROADS"/textures\"",XTEXTURES);
+      /* printf("%s\n",tmp); */
+      system(tmp);
+#else
+      symlink("../../../"DEFROADS"/textures",XTEXTURES);
+#endif
+   } else {
+      printf("%s already exists\n",XTEXTURES);
+   }
 
    genFile("roads.net");
    genFile("roads_EU.net");
+
+   if ( ! isDir(XOBJECTS) ) {
+      mkdir(XOBJECTS,0755);
+   } else {
+      printf("%s already exists\n",XOBJECTS);
+   }
 
    genBlankFac();
    genBlankObj();
