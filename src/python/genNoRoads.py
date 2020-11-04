@@ -6,8 +6,8 @@
 #
 # Create the Xroads scenery library using genXroads.py 
 #
-# melbo @ x-plane.org
-# version 1.0
+# melbo @ https://x-plane.org
+# 20201104 version 0.9.0
 #
 
 import sys
@@ -50,10 +50,10 @@ def genFile(fname):
                keep = 0
                #line = "# MELBO HIDE " + line 
 
-         elif keep == 0 and "QUAD " in line:
+         elif keep == 0 and ("QUAD " in line or "TRI " in line):
             line = "#" + line
 
-         elif "TRI " in line or (rail == 0 and "SEGMENT_DRAPED" in line):
+         elif rail == 0 and "SEGMENT_DRAPED" in line:
             line = "#" + line
 
          elif  "#rail_" in line:

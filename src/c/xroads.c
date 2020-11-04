@@ -2,9 +2,11 @@
 #
 # melbo @ https://x-plane.org
 #
-# 20201103 - v 0.8
+# 20201104 - v. 0.8.5
 #
 */
+
+#define VERSION "0.8.5"
 
 #ifdef _WIN32
  #include <windows.h>
@@ -71,47 +73,47 @@ int strip(char *s) {           /* remove trailing whitespace */
 /*-----------------------------------------------------------------*/
 
 void join(char *s, char *w[], int n) {
-  int i = 0;
+   int i = 0;
 
-  s[0]='\0';
-  while (i<n) {
-     strcat(s,w[i++]);  
-     strcat(s," ");  
-  }
+   s[0]='\0';
+   while (i<n) {
+      strcat(s,w[i++]);  
+      strcat(s," ");  
+   }
 }
 
 /*-----------------------------------------------------------------*/
 
 int split(char *s) {
-  int w = 0;
-  int i = 0;
+   int w = 0;
+   int i = 0;
+ 
+   char tmp[MAX_TXT];
+   char *k;
 
-  char tmp[MAX_TXT];
-  char *k;
+   k = tmp;
 
-  k = tmp;
+   strcpy(tmp,s);
 
-  strcpy(tmp,s);
+   while(tmp[i] > '\0' && w < MAX_WRD ) {
+      if (tmp[i] <= ' ' ) {
+         tmp[i++] = '\0';
 
-  while(tmp[i] > '\0' && w < MAX_WRD ) {
-     if (tmp[i] <= ' ' ) {
-        tmp[i++] = '\0';
+         if ( words[w] == NULL ) free(words[w]);
 
-        if ( words[w] == NULL ) free(words[w]);
-
-        words[w] = (char*) malloc(strlen(k));
-        strcpy(words[w++], k);
-        while(tmp[i] > '\0' && tmp[i] <= ' ' )
-           i++;
-        k = &tmp[i];
-     } else {
-        i++;
-     }
-  }
-  if ( words[w] == NULL ) free(words[w]);
-  words[w] = (char*) malloc(strlen(k));
-  strcpy(words[w++], k);
-  return(w);
+         words[w] = (char*) malloc(strlen(k));
+         strcpy(words[w++], k);
+         while(tmp[i] > '\0' && tmp[i] <= ' ' )
+            i++;
+         k = &tmp[i];
+      } else {
+         i++;
+      }
+   }
+   if ( words[w] == NULL ) free(words[w]);
+   words[w] = (char*) malloc(strlen(k));
+   strcpy(words[w++], k);
+   return(w);
 }
 
 /*-----------------------------------------------------------------*/
@@ -230,68 +232,62 @@ int genLibrary() {
 
 int genFile(char *s) {
 
-    FILE *in,*out;
-    char infile[MAX_TXT];
-    char outfile[MAX_TXT];
-    char buf[MAX_TXT];
-    int speed = 0;
-    int rail = 0;
-    int keep = 0;
-    int n = 0;
+   FILE *in,*out;
+   char infile[MAX_TXT];
+   char outfile[MAX_TXT];
+   char buf[MAX_TXT];
+   int speed = 0;
+   int rail = 0;
+   int keep = 0;
+   int n = 0;
 
-    sprintf(infile,"%s/%s",DEFROADS,s);
-    sprintf(outfile,"%s/%s",XROADS,s);
-    if ( ! isFile(outfile) ) {
-       if ( (in = fopen(infile,"r")) ) {
-          if ( (out = fopen(outfile,"w")) ) {
-             while ( fgets(buf, MAX_TXT, in) != NULL ) {
-                strip(buf);
-                if (strstr(buf," Junction BYT") != NULL ) {
-                   if (strstr(buf,"BYT1000") != NULL || \
-                       strstr(buf,"BYT1100") != NULL || \
-                       strstr(buf,"BYT1200") != NULL) {
-                      keep = 1;
-                   } else {
-                      keep = 0;
-                   }
-                } else {
-                   if ( ! keep && strstr(buf,"QUAD ") != NULL ) {
-                      shift(buf);
-                      buf[0] = '#';
-                   } else {
-   
-                      if ( strstr(buf,"TRI ") != NULL || (rail == 0 && strstr(buf,"SEGMENT_DRAPED") != NULL) ) {
-                         shift(buf);
-                         buf[0] = '#';
-                      } else {
-                         if ( strstr(buf,"#rail_") != NULL ) {
-                            rail = 1;
-                         } else {
-                            if ( strstr(buf,"CAR_DRAPED") != NULL || strstr(buf,"CAR_GRADED") != NULL ) {
-                               n = split(buf);               
-                               speed = atoi(words[3]) * defSpeed / 100;
-                               sprintf(words[3],"%d",speed);
-                               join(buf,(char **) words,n);
-                               strip(buf);
-                            }
-                         }
-                      }
-                   }
-                }
-                fputs(buf, out);
-                fputs("\n", out);
-             }
-             fclose(out);
-          }
-          fclose(in);
-       } else {
-          printf("cannot open %s\n",infile);
-       }
-       return(1);
-    } else {
-       printf("%s already exists\n",outfile);
-       return(0);
-    }
+   sprintf(infile,"%s/%s",DEFROADS,s);
+   sprintf(outfile,"%s/%s",XROADS,s);
+   if ( (in = fopen(infile,"r")) ) {
+      if ( (out = fopen(outfile,"w")) ) {
+         while ( fgets(buf, MAX_TXT, in) != NULL ) {
+            strip(buf);
+            if (strstr(buf," Junction BYT") != NULL ) {
+               if (strstr(buf,"BYT1000") != NULL || \
+                   strstr(buf,"BYT1100") != NULL || \
+                   strstr(buf,"BYT1200") != NULL) {
+                  keep = 1;
+               } else {
+                  keep = 0;
+               }
+            } else {
+               if ( ! keep && (strstr(buf,"QUAD ") != NULL || strstr(buf,"TRI ") != NULL) ) {
+                  shift(buf);
+                  buf[0] = '#';
+               } else {
+                  if ( rail == 0 && strstr(buf,"SEGMENT_DRAPED") != NULL ) {
+                     shift(buf);
+                     buf[0] = '#';
+                  } else {
+                     if ( strstr(buf,"#rail_") != NULL ) {
+                        rail = 1;
+                     } else {
+                        if ( strstr(buf,"CAR_DRAPED") != NULL || strstr(buf,"CAR_GRADED") != NULL ) {
+                           n = split(buf);               
+                           speed = atoi(words[3]) * defSpeed / 100;
+                           sprintf(words[3],"%d",speed);
+                           join(buf,(char **) words,n);
+                           strip(buf);
+                        }
+                     }
+                  }
+               }
+            }
+            fputs(buf, out);
+            fputs("\n", out);
+         }
+         fclose(out);
+      }
+      fclose(in);
+   } else {
+      printf("cannot open %s\n",infile);
+   }
+   return(0);
 }
 
 /*-----------------------------------------------------------------*/
@@ -299,6 +295,8 @@ int genFile(char *s) {
 int main(int argc, char **argv) {
 
    char tmp[256];
+
+   printf("Xroads - %s\n",VERSION);
 
    if ( ! isDir(XROADSDIR) ) {
       if ( mkdir(XROADSDIR,0755) ) {
@@ -345,7 +343,7 @@ int main(int argc, char **argv) {
 
 
 /*
-     library.txt example
+     library.txt
 
 A
 800

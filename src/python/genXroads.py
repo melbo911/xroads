@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 #
-# Creates or updates the Xroads "Custom Scenery" library to force Ortho4XP tiles to use 
+# Creats and updates the Xroads scenery library to force Ortho4XP tiles to use 
 # the "Xroads" road net files. It also removes parking ground polygons from ortho tiles.
 #
 # Create the net files using genNoRoads.py
 #
-# melbo @ x-plane.org
-# version 0.8
+# melbo @ https://x-plane.org
+# 20201006 version 0.8.0
 #
 
 import sys
