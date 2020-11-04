@@ -2,11 +2,9 @@
 #
 # melbo @ https://x-plane.org
 #
-# 20201104 - v. 0.8.5
-#
 */
 
-#define VERSION "0.8.5"
+#define VERSION "0.8.6"
 
 #ifdef _WIN32
  #include <windows.h>
@@ -297,6 +295,12 @@ int main(int argc, char **argv) {
    char tmp[256];
 
    printf("Xroads - %s\n",VERSION);
+
+#ifndef _WIN32
+   strcpy(tmp,dirname(argv[0]));
+   printf("changing to %s\n",tmp);
+   chdir(tmp);
+#endif
 
    if ( ! isDir(XROADSDIR) ) {
       if ( mkdir(XROADSDIR,0755) ) {
