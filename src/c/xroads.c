@@ -4,7 +4,7 @@
 #
 */
 
-#define VERSION "0.8.6"
+#define VERSION "0.8.7"
 
 #ifdef _WIN32
  #include <windows.h>
@@ -254,7 +254,7 @@ int genFile(char *s) {
                   keep = 0;
                }
             } else {
-               if ( ! keep && (strstr(buf,"QUAD ") != NULL || strstr(buf,"TRI ") != NULL) ) {
+               if ( ! keep && ! rail && (strstr(buf,"QUAD ") != NULL || strstr(buf,"TRI ") != NULL) ) {
                   shift(buf);
                   buf[0] = '#';
                } else {
@@ -262,7 +262,7 @@ int genFile(char *s) {
                      shift(buf);
                      buf[0] = '#';
                   } else {
-                     if ( strstr(buf,"#rail_") != NULL ) {
+                     if ( strstr(buf,"GRP_RAIL") != NULL ) {
                         rail = 1;
                      } else {
                         if ( strstr(buf,"CAR_DRAPED") != NULL || strstr(buf,"CAR_GRADED") != NULL ) {
