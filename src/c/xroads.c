@@ -4,7 +4,7 @@
 #
 */
 
-#define VERSION "0.8.7"
+#define VERSION "0.8.8"
 
 #ifdef _WIN32
  #include <windows.h>
@@ -209,17 +209,29 @@ int genLibrary() {
          closedir(d);
       }
 
+      /*  add optional tile coordinates to library */
+      if ( (opt = fopen("xroads.add","r")) ) {
+         while ( fgets(buf, MAX_TXT, opt) != NULL ) {
+            fputs(buf,fp);
+         }
+         fclose(opt);
+      }
+
+      /* add net file re-routes */
       fputs("\nREGION Xroads\nEXPORT_EXCLUDE lib/g10/roads.net 1000_roads/roads.net\nEXPORT_EXCLUDE lib/g10/roads_EU.net 1000_roads/roads_EU.net\n",fp);
 
+      /* add object re-routes */
       fputs("EXPORT_EXCLUDE simheaven/ground/parking_cars.fac    objects/blank.fac\nEXPORT_EXCLUDE simheaven/ground/parking_trucks.fac  objects/blank.fac\nEXPORT_EXCLUDE simheaven/ground/solar_panel.obj     objects/blank.obj\n",fp);
 
-      /*  read optional add ons to library */
+      /* add optional lines to the end of the library */
       if ( (opt = fopen("xroads.opt","r")) ) {
          while ( fgets(buf, MAX_TXT, opt) != NULL ) {
             fputs(buf,fp);
          }
          fclose(opt);
       }
+
+      /* close library */
       fclose(fp);
       return(0);
    }
