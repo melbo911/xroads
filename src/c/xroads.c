@@ -4,7 +4,7 @@
 #
 */
 
-#define VERSION "0.8.8"
+#define VERSION "0.9.0"
 
 #ifdef _WIN32
  #include <windows.h>
@@ -248,7 +248,7 @@ int genFile(char *s) {
    char buf[MAX_TXT];
    int speed = 0;
    int rail = 0;
-   int keep = 0;
+   int hwy = 0;
    int n = 0;
 
    sprintf(infile,"%s/%s",DEFROADS,s);
@@ -257,33 +257,31 @@ int genFile(char *s) {
       if ( (out = fopen(outfile,"w")) ) {
          while ( fgets(buf, MAX_TXT, in) != NULL ) {
             strip(buf);
-            if (strstr(buf," Junction BYT") != NULL ) {
-               if (strstr(buf,"BYT1000") != NULL || \
-                   strstr(buf,"BYT1100") != NULL || \
-                   strstr(buf,"BYT1200") != NULL) {
-                  keep = 1;
+            if ( strstr(buf,"# Group: ") != NULL ) {
+               if ( strstr(buf,"GRPHwyBYTs") != NULL || strstr(buf,"GRP_HIGHWAYS") != NULL ) {
+                  hwy = 1;
                } else {
-                  keep = 0;
+                  if ( strstr(buf,"GRP_RAIL") != NULL ) {
+                     rail = 1;
+                  } else {
+                     hwy = 0;
+                  }
                }
             } else {
-               if ( ! keep && ! rail && (strstr(buf,"QUAD ") != NULL || strstr(buf,"TRI ") != NULL) ) {
+               if ( ! hwy && ! rail && ( strstr(buf,"QUAD ") != NULL || strstr(buf,"TRI ") != NULL ) ) {
                   shift(buf);
                   buf[0] = '#';
                } else {
-                  if ( rail == 0 && strstr(buf,"SEGMENT_DRAPED") != NULL ) {
+                  if ( ! rail && strstr(buf,"SEGMENT_DRAPED ") != NULL ) {
                      shift(buf);
                      buf[0] = '#';
                   } else {
-                     if ( strstr(buf,"GRP_RAIL") != NULL ) {
-                        rail = 1;
-                     } else {
-                        if ( strstr(buf,"CAR_DRAPED") != NULL || strstr(buf,"CAR_GRADED") != NULL ) {
-                           n = split(buf);               
-                           speed = atoi(words[3]) * defSpeed / 100;
-                           sprintf(words[3],"%d",speed);
-                           join(buf,(char **) words,n);
-                           strip(buf);
-                        }
+                     if ( strstr(buf,"CAR_DRAPED") != NULL || strstr(buf,"CAR_GRADED") != NULL ) {
+                        n = split(buf);               
+                        speed = atoi(words[3]) * defSpeed / 100;
+                        sprintf(words[3],"%d",speed);
+                        join(buf,(char **) words,n);
+                        strip(buf);
                      }
                   }
                }
