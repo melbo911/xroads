@@ -25,7 +25,7 @@ Some examples:
 
 Download the ZIP file and copy the correct binary (xroads.exe for Windows, xroads.mac for macOS) to your X-Plane base directory and execute it. The program creates a folder "Xroads" in your "Custom Scenery" folder. Then it copies the "roads.net" and "roads-EU.net" files from the "default scenery" to it and modifies them on the fly. 
 
-It also creates a "library.txt" file inside the "Custom Scenery/Xroads" folder. The library.txt contains the coordinates of the tiles which should use "transparent roads". The coordinates are taken from the "Earth nav data" folders from sceneries whos name starts with "zOrtho".
+It also creates a "library.txt" file inside the "Custom Scenery/Xroads" folder. The library.txt contains the coordinates of the tiles which should use "transparent roads". The coordinates are taken from the "Earth nav data" folders from sceneries whos name start with "zOrtho".
 
 To improve the great X-Europe scenery even more, it creats dummy objects and facades to "hide" the parking lots and solar panels, to also use the satellite image rather than the gray autogen polygons. 
 
