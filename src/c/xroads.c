@@ -4,7 +4,7 @@
 #
 */
 
-#define VERSION "0.9.1"
+#define VERSION "0.10.1"
 
 #ifdef _WIN32
  #include <windows.h>
@@ -175,7 +175,11 @@ int genBlankObj() {
 
 /*
 
-create library.txt and add all found Ortho4XP tiles
+Create library.txt and add all found zOrtho* tiles
+
+Also scan "Earth nav data" folder to support "ortho bundles"
+
+Include "xroads.add" and append "xroad.opt" files if exist.
 
 zOrtho4XP_+51-011    >  REGION_RECT -011 +51 -011 +51
 
@@ -184,12 +188,14 @@ zOrtho4XP_+51-011    >  REGION_RECT -011 +51 -011 +51
 int genLibrary() {
    FILE *fp;
    FILE *opt;
-   DIR *d;
-   struct dirent *dir;
+   DIR *d,*e,*l;
+   struct dirent *dir,*earth,*lonlat;
 
    char lon[8];
    char lat[8];
    char buf[MAX_TXT];
+   char buf1[MAX_TXT];
+   char buf2[MAX_TXT];
 
    if ( (fp = fopen(XLIB,"w")) != NULL ) {
       fputs("A\n800\nLIBRARY\n\nREGION_DEFINE Xroads\n",fp);
@@ -197,14 +203,49 @@ int genLibrary() {
       d = opendir(XSCENERYDIR);
       if (d) {
          while ((dir = readdir(d)) != NULL) {
+/*
             if( strstr(dir->d_name,"zOrtho4XP_") ) {
-               strcpy(buf,dir->d_name);
-               strncpy(lon,&buf[10],3);
-               lon[3] = '\0';
-               strncpy(lat,&buf[13],4);
-               lat[4] = '\0';
-               sprintf(buf,"REGION_RECT %s %s %s %s\n", lat,lon,lat,lon);
-               fputs(buf,fp);
+*/
+            if( ! strncmp(dir->d_name,"zOrtho",strlen("zOrtho")) ) {
+               /* ortho folder */
+               strcpy(buf1,XSCENERYDIR);
+               strcat(buf1,"/");
+               strcat(buf1,dir->d_name);
+               strcat(buf1,"/Earth nav data");
+               /*
+               printf("trying1 %s \n", buf1);
+               */
+               e = opendir(buf1);
+               if (e) {
+                  while ((earth = readdir(e)) != NULL) {     /* scan earth nav data */
+                     if ( earth->d_name[0] != '.' ) {
+                        strcpy(buf2,buf1);
+                        strcat(buf2,"/");
+                        strcat(buf2,earth->d_name);
+                        /*
+                        printf("trying2 %s \n", buf2);
+                        */
+                        l = opendir(buf2);
+                        if (l) {
+                           while ((lonlat = readdir(l)) != NULL) {
+                              /* ignore backup files */ 
+                              if( strstr(lonlat->d_name,".dsf") &&\
+                                  strlen(lonlat->d_name) < 12 ) {
+                                 printf("adding %s\n",lonlat->d_name);
+                                 strncpy(lon,&lonlat->d_name[0],3);
+                                 lon[3] = '\0';
+                                 strncpy(lat,&lonlat->d_name[3],4);
+                                 lat[4] = '\0';
+                                 sprintf(buf,"REGION_RECT %s %s %s %s\n", lat,lon,lat,lon);
+                                 fputs(buf,fp);
+                              }
+                           }
+                           closedir(l);
+                        }
+                     }
+                  }
+                  closedir(e);
+               }
             }
          }
          closedir(d);
@@ -213,8 +254,9 @@ int genLibrary() {
       /*  add optional tile coordinates to library */
       if ( (opt = fopen("xroads.add","r")) ) {
          while ( fgets(buf, MAX_TXT, opt) != NULL ) {
-            if ( strlen(buf) > 1 )
+            if ( strlen(buf) > 1 ) { /* skip empty lines */
                fputs(buf,fp);
+            }
          }
          fclose(opt);
       }
@@ -228,8 +270,9 @@ int genLibrary() {
       /* add optional lines to the end of the library */
       if ( (opt = fopen("xroads.opt","r")) ) {
          while ( fgets(buf, MAX_TXT, opt) != NULL ) {
-            if ( strlen(buf) > 1 )
+            if ( strlen(buf) > 1 ) { /* skip empty lines */
                fputs(buf,fp);
+            }
          }
          fclose(opt);
       }
