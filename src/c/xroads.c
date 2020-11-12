@@ -4,7 +4,7 @@
 #
 */
 
-#define VERSION "0.9.0"
+#define VERSION "0.9.1"
 
 #ifdef _WIN32
  #include <windows.h>
@@ -38,10 +38,11 @@
 #define XROADSDIR XSCENERYDIR"/Xroads"
 #define XROADS XROADSDIR"/1000_roads"
 #define XTEXTURES XROADS"/textures"
-#define XOBJECTS XROADSDIR"/objects"
+#define XOBJECTS XROADS"/objects"
+#define XROBJS XROADSDIR"/objects"
 #define XLIB XROADSDIR"/library.txt"
-#define XBLANKFAC XOBJECTS"/blank.fac"
-#define XBLANKOBJ XOBJECTS"/blank.obj"
+#define XBLANKFAC XROBJS"/blank.fac"
+#define XBLANKOBJ XROBJS"/blank.obj"
 #define DEFROADS "Resources/default scenery/1000 roads"
 
 char *words[MAX_WRD];
@@ -212,7 +213,8 @@ int genLibrary() {
       /*  add optional tile coordinates to library */
       if ( (opt = fopen("xroads.add","r")) ) {
          while ( fgets(buf, MAX_TXT, opt) != NULL ) {
-            fputs(buf,fp);
+            if ( strlen(buf) > 1 )
+               fputs(buf,fp);
          }
          fclose(opt);
       }
@@ -226,7 +228,8 @@ int genLibrary() {
       /* add optional lines to the end of the library */
       if ( (opt = fopen("xroads.opt","r")) ) {
          while ( fgets(buf, MAX_TXT, opt) != NULL ) {
-            fputs(buf,fp);
+            if ( strlen(buf) > 1 )
+               fputs(buf,fp);
          }
          fclose(opt);
       }
@@ -339,13 +342,25 @@ int main(int argc, char **argv) {
       printf("%s already exists\n",XTEXTURES);
    }
 
+   if ( ! isDir(XOBJECTS"/cars") ) {
+#ifdef _WIN32
+      sprintf(tmp,"mklink /j \"%s\" \""DEFROADS"/objects\"",XOBJECTS);
+      /* printf("%s\n",tmp); */
+      system(tmp);
+#else
+      symlink("../../../"DEFROADS"/objects",XOBJECTS);
+#endif
+   } else {
+      printf("%s already exists\n",XOBJECTS);
+   }
+
    genFile("roads.net");
    genFile("roads_EU.net");
 
-   if ( ! isDir(XOBJECTS) ) {
-      mkdir(XOBJECTS,0755);
+   if ( ! isDir(XROBJS) ) {
+      mkdir(XROBJS,0755);
    } else {
-      printf("%s already exists\n",XOBJECTS);
+      printf("%s already exists\n",XROBJS);
    }
 
    genBlankFac();
