@@ -10,13 +10,13 @@ During the creation of the new roads.net files, the "speed" of the AI cars is be
 After installation you simply run the binary again if Ortho tiles have been added or deleted. The program will then just update the existing library.txt accordingly.
 
 
-New since version 0.10.0:
+New since version 0.12.0:
 
-"xroads" does not look anymore for the folder names "zOrtho4XP\_\*" to find the tile coordinates. It is now scanning the "Earth nav data" folder inside sceneries whos name start with "zOrtho". The difference is, that it still works on Ortho4XP tiles as before, but now it also works on "Ortho bundles", which cover multiple tiles, like the "US Orthophotos" provided by @Forkboy2. To hide the autogen roads on them, just rename your scenery folder to start with "zOrtho" and run the program. That's it.
+"xroads" looks for files and shortcuts starting with "zOrtho4XP\_\*" to get the tile coordinates. It is also scanning the "Earth nav data" folder inside sceneries folders (or symlinks) whos name start with "zOrtho". The difference is, that it still works on Ortho4XP tiles as before, but it also works on "Ortho bundles", which cover multiple tiles, like the "US Orthophotos" provided by @Forkboy2. To hide the autogen roads on them, just rename your scenery folder to start with "zOrtho" and run the program. That's it.
 
 Some examples:
 
-	zOrtho4XP_+48+011
+    zOrtho4XP_+48+011
     zOrtho_some_cool_ortho
     zOrtho_Forkboy2_California_v5
 
