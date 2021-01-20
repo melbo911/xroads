@@ -4,7 +4,7 @@
 #
 */
 
-#define VERSION "0.11.0"
+#define VERSION "0.12.0"
 
 #ifdef _WIN32
  #include <windows.h>
@@ -245,6 +245,17 @@ int genLibrary() {
                      }
                   }
                   closedir(e);
+               } else {
+                  if( strstr(dir->d_name,"zOrtho4XP_") ) {
+                     printf("adding %s\n",dir->d_name);
+                     strcpy(buf,dir->d_name);
+                     strncpy(lon,&buf[10],3);
+                     lon[3] = '\0';
+                     strncpy(lat,&buf[13],4);
+                     lat[4] = '\0';
+                     sprintf(buf,"REGION_RECT %s %s %s %s\n", lat,lon,lat,lon);
+                     fputs(buf,fp);
+                  }
                }
             }
          }
