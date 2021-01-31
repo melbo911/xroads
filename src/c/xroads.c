@@ -4,7 +4,7 @@
 #
 */
 
-#define VERSION "0.13.0"
+#define VERSION "0.15.0"
 
 #ifdef _WIN32
  #include <windows.h>
@@ -44,8 +44,10 @@
 #define XBLANKFAC XROBJS"/blank.fac"
 #define XBLANKOBJ XROBJS"/blank.obj"
 #define DEFROADS "Resources/default scenery/1000 roads"
+#define XESCENE "simHeaven_X-Europe-4-scenery"
 
 char *words[MAX_WRD];
+int hasXE = 0;
 
 /*-----------------------------------------------------------------*/
 
@@ -98,9 +100,7 @@ int split(char *s) {
       if (tmp[i] <= ' ' ) {
          tmp[i++] = '\0';
 
-         if ( words[w] == NULL ) free(words[w]);
-
-         words[w] = (char*) malloc(strlen(k));
+         if ( words[w] == NULL ) words[w] = (char*) malloc(MAX_TXT);
          strcpy(words[w++], k);
          while(tmp[i] > '\0' && tmp[i] <= ' ' )
             i++;
@@ -109,8 +109,7 @@ int split(char *s) {
          i++;
       }
    }
-   if ( words[w] == NULL ) free(words[w]);
-   words[w] = (char*) malloc(strlen(k));
+   if ( words[w] == NULL ) words[w] = (char*) malloc(MAX_TXT);
    strcpy(words[w++], k);
    return(w);
 }
@@ -278,7 +277,12 @@ int genLibrary() {
       fputs("\nREGION Xroads\nEXPORT_EXCLUDE lib/g10/roads.net 1000_roads/roads.net\nEXPORT_EXCLUDE lib/g10/roads_EU.net 1000_roads/roads_EU.net\n",fp);
 
       /* add object re-routes */
-      fputs("EXPORT_EXCLUDE simheaven/ground/parking_cars.fac    objects/blank.fac\nEXPORT_EXCLUDE simheaven/ground/parking_trucks.fac  objects/blank.fac\nEXPORT_EXCLUDE simheaven/ground/solar_panel.obj     objects/blank.obj\n",fp);
+      if ( hasXE ) {
+         fputs("EXPORT_EXCLUDE simheaven/ground/parking_cars.fac    objects/parking_cars.fac\nEXPORT_EXCLUDE simheaven/ground/parking_trucks.fac  objects/parking_trucks.fac\n",fp);
+      } else {
+         fputs("EXPORT_EXCLUDE simheaven/ground/parking_cars.fac    objects/blank.fac\nEXPORT_EXCLUDE simheaven/ground/parking_trucks.fac  objects/blank.fac\n",fp);
+      }
+      fputs("EXPORT_EXCLUDE simheaven/ground/solar_panel.obj     objects/blank.obj\n",fp);
 
       /* add optional lines to the end of the library */
       if ( (opt = fopen("xroads.opt","r")) ) {
@@ -299,7 +303,7 @@ int genLibrary() {
 
 /*-----------------------------------------------------------------*/
 
-int genFile(char *s) {
+int genNetFile(char *s) {
 
    FILE *in,*out;
    char infile[MAX_TXT];
@@ -336,19 +340,70 @@ int genFile(char *s) {
                      buf[0] = '#';
                   } else {
                      if ( strstr(buf,"CAR_DRAPED") || strstr(buf,"CAR_GRADED") ) {
-                        n = split(buf);               
-                        speed = atoi(words[3]) * defSpeed / 100;
-                        sprintf(words[3],"%d",speed);
-                        join(buf,(char **) words,n);
-                        strip(buf);
+                        n = split(buf);
+                        if ( n > 3 ) {
+                           speed = atoi(words[3]) * defSpeed / 100;
+                           sprintf(words[3],"%d",speed);
+                           join(buf,(char **) words,n);
+                           strip(buf);
+                        }
                      } else {
-                        /* ignore trees on roads */
-                        if ( strstr(buf,"autogen_tree") ) {
-                           shift(buf);
-                           buf[0] = '#';
+                        if ( strstr(buf,"WIRE 0") ) {
+                           n = split(buf); 
+                           if ( n > 2 ) {
+                              sprintf(words[2],"3000");
+                              join(buf,(char **) words,n);
+                              strip(buf);
+                           }
+                        } else {
+                           /* ignore trees on roads */
+                           if ( strstr(buf,"autogen_tree") ) {
+                              shift(buf);
+                              buf[0] = '#';
+                           }
                         }
                      }
                   }
+               }
+            }
+            fputs(buf, out);
+            fputs("\n", out);
+         }
+         fclose(out);
+      }
+      fclose(in);
+   } else {
+      printf("cannot open %s\n",infile);
+   }
+   return(0);
+}
+
+/*-----------------------------------------------------------------*/
+
+
+int genFacFile(char *s) {
+
+   FILE *in,*out;
+   char infile[MAX_TXT];
+   char outfile[MAX_TXT];
+   char buf[MAX_TXT];
+   int speed = 0;
+   int rail = 0;
+   int hwy = 0;
+   int n = 0;
+
+   sprintf(infile,"%s/%s/objects/ground/%s",XSCENERYDIR,XESCENE,s);
+   sprintf(outfile,"%s/%s",XROBJS,s);
+   if ( (in = fopen(infile,"r")) ) {
+      if ( (out = fopen(outfile,"w")) ) {
+         while ( fgets(buf, MAX_TXT, in) != NULL ) {
+            strip(buf);
+
+            if ( strstr(buf,"fencing.png") ) {
+               sprintf(buf,"TEXTURE ../../%s/objects/ground/fencing.png",XESCENE);
+            } else {
+               if ( strstr(buf,"Roof_Asphalt.png") ) {
+                  sprintf(buf,"TEXTURE ../../%s/objects/blank.dds",XESCENE);
                }
             }
             fputs(buf, out);
@@ -416,8 +471,8 @@ int main(int argc, char **argv) {
       printf("%s already exists\n",XOBJECTS);
    }
 
-   genFile("roads.net");
-   genFile("roads_EU.net");
+   genNetFile("roads.net");
+   genNetFile("roads_EU.net");
 
    if ( ! isDir(XROBJS) ) {
       mkdir(XROBJS,0755);
@@ -427,6 +482,13 @@ int main(int argc, char **argv) {
 
    genBlankFac();
    genBlankObj();
+
+   if ( isDir(XSCENERYDIR"/"XESCENE"/objects") ) {
+      hasXE = 1;
+      printf("setting up X-Europe parking\n");
+      genFacFile("Parking_Cars.fac");
+      genFacFile("Parking_Trucks.fac");
+   }
 
    genLibrary();
 
