@@ -4,7 +4,7 @@
 #
 */
 
-#define VERSION "0.15.0"
+#define VERSION "0.16.0"
 
 #ifdef _WIN32
  #include <windows.h>
@@ -351,7 +351,7 @@ int genNetFile(char *s) {
                         if ( strstr(buf,"WIRE 0") ) {
                            n = split(buf); 
                            if ( n > 2 ) {
-                              sprintf(words[2],"3000");
+                              sprintf(words[2],"2000");
                               join(buf,(char **) words,n);
                               strip(buf);
                            }
