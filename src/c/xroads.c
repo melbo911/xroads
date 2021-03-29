@@ -4,7 +4,7 @@
 #
 */
 
-#define VERSION "0.16.0"
+#define VERSION "0.17.0"
 
 #ifdef _WIN32
  #include <windows.h>
@@ -278,7 +278,7 @@ int genLibrary() {
 
       /* add object re-routes */
       if ( hasXE ) {
-         fputs("EXPORT_EXCLUDE simheaven/ground/parking_cars.fac    objects/parking_cars.fac\nEXPORT_EXCLUDE simheaven/ground/parking_trucks.fac  objects/parking_trucks.fac\n",fp);
+         fputs("EXPORT_EXCLUDE simheaven/ground/parking_cars.fac    objects/Parking_Cars.fac\nEXPORT_EXCLUDE simheaven/ground/parking_trucks.fac  objects/Parking_Trucks.fac\n",fp);
       } else {
          fputs("EXPORT_EXCLUDE simheaven/ground/parking_cars.fac    objects/blank.fac\nEXPORT_EXCLUDE simheaven/ground/parking_trucks.fac  objects/blank.fac\n",fp);
       }
@@ -404,6 +404,10 @@ int genFacFile(char *s) {
             } else {
                if ( strstr(buf,"Roof_Asphalt.png") ) {
                   sprintf(buf,"TEXTURE ../../%s/objects/blank.dds",XESCENE);
+               } else {
+                  if ( strstr(buf,"Omni_Parking_Lit.obj") ) {
+                     sprintf(buf,"OBJ ../../%s/objects/ground/Omni_Parking_Lit.obj",XESCENE);
+                  }
                }
             }
             fputs(buf, out);
