@@ -4,7 +4,7 @@
 #
 */
 
-#define VERSION "0.17.0"
+#define VERSION "0.18.0"
 
 #ifdef _WIN32
  #include <windows.h>
@@ -348,19 +348,10 @@ int genNetFile(char *s) {
                            strip(buf);
                         }
                      } else {
-                        if ( strstr(buf,"WIRE 0") ) {
-                           n = split(buf); 
-                           if ( n > 2 ) {
-                              sprintf(words[2],"2000");
-                              join(buf,(char **) words,n);
-                              strip(buf);
-                           }
-                        } else {
-                           /* ignore trees on roads */
-                           if ( strstr(buf,"autogen_tree") ) {
-                              shift(buf);
-                              buf[0] = '#';
-                           }
+                        /* ignore trees on roads */
+                        if ( strstr(buf,"autogen_tree") ) {
+                           shift(buf);
+                           buf[0] = '#';
                         }
                      }
                   }
