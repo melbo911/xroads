@@ -4,7 +4,7 @@
 #
 */
 
-#define VERSION "0.18.0"
+#define VERSION "0.19.0"
 
 #ifdef _WIN32
  #include <windows.h>
@@ -491,7 +491,7 @@ int main(int argc, char **argv) {
 
 
 /*
-     library.txt
+    example library.txt
 
 A
 800
@@ -510,8 +510,8 @@ REGION Xroads
 EXPORT_EXCLUDE lib/g10/roads.net 1000_roads/roads.net
 EXPORT_EXCLUDE lib/g10/roads_EU.net 1000_roads/roads_EU.net
 
-EXPORT_EXCLUDE simheaven/ground/parking_cars.fac    objects/blank.fac
-EXPORT_EXCLUDE simheaven/ground/parking_trucks.fac  objects/blank.fac
+EXPORT_EXCLUDE simheaven/ground/parking_cars.fac    objects/Parking_Cars.fac
+EXPORT_EXCLUDE simheaven/ground/parking_trucks.fac  objects/Parking_Trucks.fac
 EXPORT_EXCLUDE simheaven/ground/solar_panel.obj     objects/blank.obj
 
 */
