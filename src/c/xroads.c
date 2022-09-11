@@ -4,7 +4,7 @@
 #
 */
 
-#define VERSION "0.19.0"
+#define VERSION "0.20.0"
 
 #ifdef _WIN32
  #include <windows.h>
@@ -45,7 +45,12 @@
 #define XBLANKOBJ XROBJS"/blank.obj"
 #define DEFROADS "Resources/default scenery/1000 roads"
 #define XESCENE "simHeaven_X-Europe-4-scenery"
+#define XASCENE "simHeaven_X-America-4-scenery"
+#define XWESCENE "simHeaven_X-World_Europe-6-scenery"
+#define XWASCENE "simHeaven_X-World_America-6-scenery"
 
+char XSCENE[MAX_TXT] = "";
+char XTEST[MAX_TXT] = "";
 char *words[MAX_WRD];
 int hasXE = 0;
 
@@ -378,26 +383,26 @@ int genFacFile(char *s) {
    char infile[MAX_TXT];
    char outfile[MAX_TXT];
    char buf[MAX_TXT];
+  
    int speed = 0;
    int rail = 0;
    int hwy = 0;
    int n = 0;
-
-   sprintf(infile,"%s/%s/objects/ground/%s",XSCENERYDIR,XESCENE,s);
+   
+   sprintf(infile,"%s/%s/objects/ground/%s",XSCENERYDIR,XSCENE,s);
    sprintf(outfile,"%s/%s",XROBJS,s);
    if ( (in = fopen(infile,"r")) ) {
       if ( (out = fopen(outfile,"w")) ) {
          while ( fgets(buf, MAX_TXT, in) != NULL ) {
-            strip(buf);
-
+            strip(buf);  
             if ( strstr(buf,"fencing.png") ) {
-               sprintf(buf,"TEXTURE ../../%s/objects/ground/fencing.png",XESCENE);
+               sprintf(buf,"TEXTURE ../../%s/objects/ground/fencing.png",XSCENE);
             } else {
                if ( strstr(buf,"Roof_Asphalt.png") ) {
-                  sprintf(buf,"TEXTURE ../../%s/objects/blank.dds",XESCENE);
+                  sprintf(buf,"TEXTURE ../../%s/objects/blank.dds",XSCENE);
                } else {
                   if ( strstr(buf,"Omni_Parking_Lit.obj") ) {
-                     sprintf(buf,"OBJ ../../%s/objects/ground/Omni_Parking_Lit.obj",XESCENE);
+                     sprintf(buf,"OBJ ../../%s/objects/ground/Omni_Parking_Lit.obj",XSCENE);
                   }
                }
             }
@@ -410,6 +415,7 @@ int genFacFile(char *s) {
    } else {
       printf("cannot open %s\n",infile);
    }
+  
    return(0);
 }
 
@@ -478,9 +484,28 @@ int main(int argc, char **argv) {
    genBlankFac();
    genBlankObj();
 
-   if ( isDir(XSCENERYDIR"/"XESCENE"/objects") ) {
+   sprintf(XTEST,"%s/%s",XSCENERYDIR,XESCENE);          // X-Europe
+   if ( isDir(XTEST) ) {
+      strcpy(XSCENE,XESCENE);
+   } else {
+      sprintf(XTEST,"%s/%s",XSCENERYDIR,XASCENE);       // X-America
+      if ( isDir(XTEST) ) {
+         strcpy(XSCENE,XASCENE);
+      } else {
+         sprintf(XTEST,"%s/%s",XSCENERYDIR,XWESCENE);   // X-World Europe
+         if ( isDir(XTEST) ) {
+            strcpy(XSCENE,XWESCENE);
+         } else {
+            sprintf(XTEST,"%s/%s",XSCENERYDIR,XWASCENE); // X-World America
+            if ( isDir(XTEST) ) {
+               strcpy(XSCENE,XWASCENE);
+            }      
+         }      
+      }      
+   }
+   if ( strlen(XSCENE) > 0 ) {
       hasXE = 1;
-      printf("setting up X-Europe parking\n");
+      printf("setting up %s parking\n",XSCENE);
       genFacFile("Parking_Cars.fac");
       genFacFile("Parking_Trucks.fac");
    }
