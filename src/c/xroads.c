@@ -4,7 +4,7 @@
 #
 */
 
-#define VERSION "0.20.0"
+#define VERSION "0.21.0"
 
 #ifdef _WIN32
  #include <windows.h>
@@ -44,11 +44,17 @@
 #define XBLANKFAC XROBJS"/blank.fac"
 #define XBLANKOBJ XROBJS"/blank.obj"
 #define DEFROADS "Resources/default scenery/1000 roads"
-#define XESCENE "simHeaven_X-Europe-4-scenery"
-#define XASCENE "simHeaven_X-America-4-scenery"
-#define XWESCENE "simHeaven_X-World_Europe-6-scenery"
-#define XWASCENE "simHeaven_X-World_America-6-scenery"
 
+char *XSCENES[100] = {
+	"simHeaven_X-Europe-4-scenery",
+	"simHeaven_X-America-4-scenery",
+	"simHeaven_X-Europe-6-scenery",
+	"simHeaven_X-America-6-scenery",
+	"simHeaven_X-World_Europe-6-scenery",
+	"simHeaven_X-World_America-6-scenery",
+	NULL
+};
+	
 char XSCENE[MAX_TXT] = "";
 char XTEST[MAX_TXT] = "";
 char *words[MAX_WRD];
@@ -424,6 +430,7 @@ int genFacFile(char *s) {
 int main(int argc, char **argv) {
 
    char tmp[256];
+   int i;
 
    printf("Xroads - %s\n",VERSION);
 
@@ -484,30 +491,23 @@ int main(int argc, char **argv) {
    genBlankFac();
    genBlankObj();
 
-   sprintf(XTEST,"%s/%s",XSCENERYDIR,XESCENE);          // X-Europe
-   if ( isDir(XTEST) ) {
-      strcpy(XSCENE,XESCENE);
-   } else {
-      sprintf(XTEST,"%s/%s",XSCENERYDIR,XASCENE);       // X-America
-      if ( isDir(XTEST) ) {
-         strcpy(XSCENE,XASCENE);
-      } else {
-         sprintf(XTEST,"%s/%s",XSCENERYDIR,XWESCENE);   // X-World Europe
-         if ( isDir(XTEST) ) {
-            strcpy(XSCENE,XWESCENE);
-         } else {
-            sprintf(XTEST,"%s/%s",XSCENERYDIR,XWASCENE); // X-World America
-            if ( isDir(XTEST) ) {
-               strcpy(XSCENE,XWASCENE);
-            }      
-         }      
-      }      
+
+   // identify installed SimHeaven scenery packs
+
+   for ( i=0 ; XSCENES[i] != NULL ; i++ ) {
+     sprintf(XTEST,"%s/%s",XSCENERYDIR,XSCENES[i]);
+     if ( isDir(XTEST) ) {
+       strcpy(XSCENE,XSCENES[i]);
+   }
+ 
    }
    if ( strlen(XSCENE) > 0 ) {
       hasXE = 1;
       printf("setting up %s parking\n",XSCENE);
       genFacFile("Parking_Cars.fac");
       genFacFile("Parking_Trucks.fac");
+   } else {
+      printf("info: no supported SimHeaven scenery found\n");
    }
 
    genLibrary();
