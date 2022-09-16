@@ -4,7 +4,7 @@
 #
 */
 
-#define VERSION "0.21.0"
+#define VERSION "0.23.0"
 
 #ifdef _WIN32
  #include <windows.h>
@@ -57,7 +57,7 @@ char *XSCENES[100] = {
 	
 char XSCENE[MAX_TXT] = "";
 char XTEST[MAX_TXT] = "";
-char *words[MAX_WRD];
+char words[MAX_TXT][MAX_WRD];
 int hasXE = 0;
 
 /*-----------------------------------------------------------------*/
@@ -84,12 +84,12 @@ int strip(char *s) {           /* remove trailing whitespace */
 
 /*-----------------------------------------------------------------*/
 
-void join(char *s, char *w[], int n) {
+void join(char *s, int n) {
    int i = 0;
 
    s[0]='\0';
    while (i<n) {
-      strcat(s,w[i++]);  
+      strcat(s,words[i++]);  
       strcat(s," ");  
    }
 }
@@ -111,7 +111,6 @@ int split(char *s) {
       if (tmp[i] <= ' ' ) {
          tmp[i++] = '\0';
 
-         if ( words[w] == NULL ) words[w] = (char*) malloc(MAX_TXT);
          strcpy(words[w++], k);
          while(tmp[i] > '\0' && tmp[i] <= ' ' )
             i++;
@@ -120,7 +119,7 @@ int split(char *s) {
          i++;
       }
    }
-   if ( words[w] == NULL ) words[w] = (char*) malloc(MAX_TXT);
+ 
    strcpy(words[w++], k);
    return(w);
 }
@@ -355,7 +354,7 @@ int genNetFile(char *s) {
                         if ( n > 3 ) {
                            speed = atoi(words[3]) * defSpeed / 100;
                            sprintf(words[3],"%d",speed);
-                           join(buf,(char **) words,n);
+                           join(buf,n);
                            strip(buf);
                         }
                      } else {
