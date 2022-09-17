@@ -4,7 +4,7 @@
 #
 */
 
-#define VERSION "0.23.0"
+#define VERSION "0.24.0"
 
 #ifdef _WIN32
  #include <windows.h>
@@ -32,18 +32,18 @@
 
 #define defSpeed 70	/*  reduce speed of IA cars to 70 % */
 #define MAX_TXT 1024
-#define MAX_WRD 1024
+#define MAX_WRD 256
 
 #define XSCENERYDIR "./Custom Scenery"
-#define XROADSDIR XSCENERYDIR"/Xroads"
-#define XROADS XROADSDIR"/1000_roads"
-#define XTEXTURES XROADS"/textures"
-#define XOBJECTS XROADS"/objects"
-#define XROBJS XROADSDIR"/objects"
-#define XLIB XROADSDIR"/library.txt"
-#define XBLANKFAC XROBJS"/blank.fac"
-#define XBLANKOBJ XROBJS"/blank.obj"
-#define DEFROADS "Resources/default scenery/1000 roads"
+#define XROADSDIR   XSCENERYDIR"/Xroads"
+#define XROADS      XROADSDIR"/1000_roads"
+#define XTEXTURES   XROADS"/textures"
+#define XOBJECTS    XROADS"/objects"
+#define XROBJS      XROADSDIR"/objects"
+#define XLIB        XROADSDIR"/library.txt"
+#define XBLANKFAC   XROBJS"/blank.fac"
+#define XBLANKOBJ   XROBJS"/blank.obj"
+#define DEFROADS    "Resources/default scenery/1000 roads"
 
 char *XSCENES[100] = {
 	"simHeaven_X-Europe-4-scenery",
@@ -57,20 +57,8 @@ char *XSCENES[100] = {
 	
 char XSCENE[MAX_TXT] = "";
 char XTEST[MAX_TXT] = "";
-char words[MAX_TXT][MAX_WRD];
+char words[MAX_WRD][MAX_TXT];
 int hasXE = 0;
-
-/*-----------------------------------------------------------------*/
-
-int shift(char *s) {           /* shift string to the right */
-   int i = strlen(s);
-   while (i >= 0) {
-      s[i+1] = s[i];
-      i--;
-   }
-   s[i] = ' ';
-   return(0);
-}
 
 /*-----------------------------------------------------------------*/
 
@@ -84,7 +72,7 @@ int strip(char *s) {           /* remove trailing whitespace */
 
 /*-----------------------------------------------------------------*/
 
-void join(char *s, int n) {
+int join(char *s, int n) {
    int i = 0;
 
    s[0]='\0';
@@ -92,6 +80,7 @@ void join(char *s, int n) {
       strcat(s,words[i++]);  
       strcat(s," ");  
    }
+   return(0);
 }
 
 /*-----------------------------------------------------------------*/
@@ -123,17 +112,15 @@ int split(char *s) {
    strcpy(words[w++], k);
    return(w);
 }
-
 /*-----------------------------------------------------------------*/
 
-int isFile(char *s) {
-   struct stat sb;
-
-   if (stat(s, &sb) == 0 && S_ISREG(sb.st_mode)) {
-      return(1); 
-   } else {
-      return(0); 
+int shift(char *s) {           /* shift string to the right */
+   int i = strlen(s);
+   while (i >= 0) {
+      s[i+1] = s[i];
+      i--;
    }
+   return(0);
 }
 
 /*-----------------------------------------------------------------*/
@@ -142,6 +129,18 @@ int isDir(char *s) {
    struct stat sb;
 
    if (stat(s, &sb) == 0 && S_ISDIR(sb.st_mode)) {
+      return(1); 
+   } else {
+      return(0); 
+   }
+}
+
+/*-----------------------------------------------------------------*/
+
+int isFile(char *s) {
+   struct stat sb;
+
+   if (stat(s, &sb) == 0 && S_ISREG(sb.st_mode)) {
       return(1); 
    } else {
       return(0); 
@@ -215,7 +214,8 @@ int genLibrary() {
 /*
             if( strstr(dir->d_name,"zOrtho4XP_") ) {
 */
-            if( ! strncmp(dir->d_name,"zOrtho",strlen("zOrtho")) ) {
+            if( ! strncmp(dir->d_name,"zOrtho",strlen("zOrtho")) || 
+                 ! strncmp(dir->d_name,"z_ortho",strlen("z_ortho")) ) {
                /* ortho folder */
                strcpy(buf1,XSCENERYDIR);
                strcat(buf1,"/");
@@ -319,16 +319,18 @@ int genNetFile(char *s) {
    char infile[MAX_TXT];
    char outfile[MAX_TXT];
    char buf[MAX_TXT];
-   int speed = 0;
+   char *ch;
+   unsigned int speed = 0;
+   unsigned int n = 0;
    int rail = 0;
    int hwy = 0;
-   int n = 0;
+   
 
    sprintf(infile,"%s/%s",DEFROADS,s);
    sprintf(outfile,"%s/%s",XROADS,s);
    if ( (in = fopen(infile,"r")) ) {
       if ( (out = fopen(outfile,"w")) ) {
-         while ( fgets(buf, MAX_TXT, in) != NULL ) {
+         while ( fgets(buf, MAX_TXT, in) ) {
             strip(buf);
             if ( strstr(buf,"# Group: ") ) {
                if ( strstr(buf,"GRPHwyBYTs") || strstr(buf,"GRP_HIGHWAYS") ) {
@@ -350,11 +352,19 @@ int genNetFile(char *s) {
                      buf[0] = '#';
                   } else {
                      if ( strstr(buf,"CAR_DRAPED") || strstr(buf,"CAR_GRADED") ) {
-                        n = split(buf);
+						
+						ch = strtok(buf, " \t");
+						n = 0;
+						while (ch != NULL) {
+						   strcpy(words[n++],ch);
+                           ch = strtok(NULL, " \t");
+						}  
+                        
+                        //n = split(buf);						
                         if ( n > 3 ) {
                            speed = atoi(words[3]) * defSpeed / 100;
                            sprintf(words[3],"%d",speed);
-                           join(buf,n);
+                           n = join(buf,n);
                            strip(buf);
                         }
                      } else {
@@ -380,7 +390,6 @@ int genNetFile(char *s) {
 }
 
 /*-----------------------------------------------------------------*/
-
 
 int genFacFile(char *s) {
 
