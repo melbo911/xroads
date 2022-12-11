@@ -4,7 +4,7 @@
 #
 */
 
-#define VERSION "0.24.0"
+#define VERSION "0.25.0"
 
 #ifdef _WIN32
  #include <windows.h>
@@ -215,7 +215,8 @@ int genLibrary() {
             if( strstr(dir->d_name,"zOrtho4XP_") ) {
 */
             if( ! strncmp(dir->d_name,"zOrtho",strlen("zOrtho")) || 
-                 ! strncmp(dir->d_name,"z_ortho",strlen("z_ortho")) ) {
+               ! strncmp(dir->d_name,"zVStates",strlen("zVStates")) ||
+               ! strncmp(dir->d_name,"z_ortho",strlen("z_ortho")) ) {
                /* ortho folder */
                strcpy(buf1,XSCENERYDIR);
                strcat(buf1,"/");
