@@ -2,9 +2,12 @@
 #
 # melbo @ https://x-plane.org
 #
+# 
+# compile:   cl xroads.c /D "NODEBUG" /O2 /link Ole32.lib
+# 
 */
 
-#define VERSION "0.30"
+#define VERSION "0.31"
 
 #ifdef _WIN32
   #include <windows.h>
@@ -34,6 +37,7 @@
 #define defSpeed     70	/*  reduce speed of IA cars to 70 % */
 #define MAX_TXT      1024
 #define MAX_WRD      256
+#define NO_HWY_LTS   1
 
 #define XSCENERYDIR  "./Custom Scenery"
 #define XROADSDIR    XSCENERYDIR"/Xroads"
@@ -295,9 +299,8 @@ int genLibrary() {
           strcpy(buf1,XSCENERYDIR);
           strcat(buf1,"/");
           strcat(buf1,dir->d_name);
-#ifdef _WIN32x
-          if ( strstr(dir->d_name,".lnk") ) {
-            //  if shortcut, resolve target
+#ifdef _WIN32
+          if ( strstr(dir->d_name,".lnk") ) {       //  if shortcut, resolve target          
             // printf("trying shortcut %s ...\n",dir->d_name);
             mbstowcs(wshortcut,buf1,MAX_PATH);
             rc = GetShortcutTargetPath(wshortcut);
@@ -306,7 +309,7 @@ int genLibrary() {
               strcpy(buf1,targetPath);
             } else {
               printf("could not follow shortcut: %s (rc=%d)\n",dir->d_name,rc);
-            }           
+            }
           }
 #endif
           strcat(buf1,"/Earth nav data");  
@@ -398,7 +401,7 @@ int genLibrary() {
 
 /*-----------------------------------------------------------------*/
 
-int genNetFile(char *s) {
+int genNetFile(char *s,int opts) {
 
   FILE *in,*out;
   char infile[MAX_TXT];
@@ -409,6 +412,7 @@ int genNetFile(char *s) {
   unsigned int n = 0;
   int rail = 0;
   int hwy = 0;
+  int skipNext = 0;
   
 
   sprintf(infile,"%s/%s",DEFROADS,s);
@@ -454,6 +458,18 @@ int genNetFile(char *s) {
                 if ( strstr(buf,"autogen_tree") ) {
                   shift(buf);
                   buf[0] = '#';
+                } else {
+                  if ( opts == NO_HWY_LTS && strstr(buf,"HwyLt") ) {
+                    shift(buf);
+                    buf[0] = '#';
+                    skipNext = 1;
+                  } else {
+                    if ( skipNext ) {
+                      shift(buf);
+                      buf[0] = '#';
+                      skipNext = 0;
+                    }
+                  }
                 }
               }
             }
@@ -576,8 +592,8 @@ int main(int argc, char **argv) {
     printf("%s exists\n",XOBJECTS);
   }
 
-  genNetFile("roads.net");
-  genNetFile("roads_EU.net");
+  genNetFile("roads.net",0);
+  genNetFile("roads_EU.net",NO_HWY_LTS);
 
   if ( ! isDir(XROBJS) ) {
     if ( mkdir(XROBJS,0755) ) {

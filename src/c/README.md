@@ -49,7 +49,7 @@ Windows:
 
     requires "dirent.h"  ( i.e. from https://github.com/tronkko/dirent/blob/master/include/dirent.h )
 
-	cl xroads.c /link Ole32.lib
+	cl xroads.c /D "NODEBUG" /O2 /link Ole32.lib
 
 
 macOS or Linux:
