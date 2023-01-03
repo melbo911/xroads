@@ -286,6 +286,7 @@ int genLibrary() {
   char buf2[MAX_TXT];
 
   if ( (fp = fopen(XLIB,"w")) != NULL ) {
+    printf("creating library.txt\n");
     fputs("A\n800\nLIBRARY\n\nREGION_DEFINE Xroads\n",fp);
 
     d = opendir(XSCENERYDIR);
@@ -363,6 +364,7 @@ int genLibrary() {
 
     /*  add optional tile coordinates to library */
     if ( (opt = fopen("xroads.add","r")) ) {
+      printf("appending xroads.add\n");
       while ( fgets(buf, MAX_TXT, opt) != NULL ) {
         if ( strlen(buf) > 1 ) { /* skip empty lines */
           fputs(buf,fp);
@@ -384,6 +386,7 @@ int genLibrary() {
 
     /* add optional lines to the end of the library */
     if ( (opt = fopen("xroads.opt","r")) ) {
+      printf("appending xroads.opt\n");
       while ( fgets(buf, MAX_TXT, opt) != NULL ) {
         if ( strlen(buf) > 1 ) { /* skip empty lines */
           fputs(buf,fp);
@@ -419,6 +422,7 @@ int genNetFile(char *s,int opts) {
   sprintf(outfile,"%s/%s",XROADS,s);
   if ( (in = fopen(infile,"r")) ) {
     if ( (out = fopen(outfile,"w")) ) {
+      printf("creating %s\n",s);
       while ( fgets(buf, MAX_TXT, in) ) {
         strip(buf);
         if ( strstr(buf,"# Group: ") ) {
