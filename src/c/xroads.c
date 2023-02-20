@@ -7,7 +7,7 @@
 # 
 */
 
-#define VERSION "0.31"
+#define VERSION "0.32"
 
 #ifdef _WIN32
   #include <windows.h>
@@ -343,18 +343,16 @@ int genLibrary() {
               }
             }
             closedir(e);
-          } else {
-            if( strstr(dir->d_name,"zOrtho4XP_") ) {
-              strcpy(buf,dir->d_name);
-              strncpy(lon,&buf[10],3);
-              lon[3] = '\0';
-              strncpy(lat,&buf[13],4);
-              lat[4] = '\0';
-              if ( atoi(lon) != 0 && atoi(lat) != 0 ) {
-                printf("adding %s\n",dir->d_name);
-                sprintf(buf,"REGION_RECT %s %s %s %s\n", lat,lon,lat,lon);
-                fputs(buf,fp);
-              }
+          } else if( strstr(dir->d_name,"zOrtho4XP_") ) {
+            strcpy(buf,dir->d_name);
+            strncpy(lon,&buf[10],3);
+            lon[3] = '\0';
+            strncpy(lat,&buf[13],4);
+            lat[4] = '\0';
+            if ( atoi(lon) != 0 && atoi(lat) != 0 ) {
+              printf("adding %s\n",dir->d_name);
+              sprintf(buf,"REGION_RECT %s %s %s %s\n", lat,lon,lat,lon);
+              fputs(buf,fp);
             }
           }
         }
@@ -435,49 +433,36 @@ int genNetFile(char *s,int opts) {
               hwy = 0;
             }
           }
-        } else {
-          if ( ! hwy && ! rail && ( strstr(buf,"QUAD ") || strstr(buf,"TRI ") ) ) {
-            shift(buf);
-            buf[0] = '#';
-          } else {
-            if ( ! rail && strstr(buf,"SEGMENT_DRAPED ") ) {
-              shift(buf);
-              buf[0] = '#';
-            } else {
-              if ( strstr(buf,"CAR_DRAPED") || strstr(buf,"CAR_GRADED") ) {
-                ch = strtok(buf, " \t");
-                n = 0;
-                while (ch != NULL) {
-                  strcpy(words[n++],ch);
-                  ch = strtok(NULL, " \t");
-                }
-                if ( n > 3 ) {
-                  speed = atoi(words[3]) * defSpeed / 100;
-                  sprintf(words[3],"%d",speed);
-                  n = join(buf,n);
-                  strip(buf);
-                }
-              } else {
-                /* ignore trees on roads */
-                if ( strstr(buf,"autogen_tree") ) {
-                  shift(buf);
-                  buf[0] = '#';
-                } else {
-                  if ( opts == NO_HWY_LTS && strstr(buf,"HwyLt") ) {
-                    shift(buf);
-                    buf[0] = '#';
-                    skipNext = 1;
-                  } else {
-                    if ( skipNext ) {
-                      shift(buf);
-                      buf[0] = '#';
-                      skipNext = 0;
-                    }
-                  }
-                }
-              }
-            }
+        } else if ( ! hwy && ! rail && ( strstr(buf,"QUAD ") || strstr(buf,"TRI ") ) ) {
+          shift(buf);
+          buf[0] = '#';
+        } else if ( ! rail && strstr(buf,"SEGMENT_DRAPED ") ) {
+          shift(buf); 
+          buf[0] = '#';
+        } else if ( strstr(buf,"CAR_DRAPED") || strstr(buf,"CAR_GRADED") ) {
+          ch = strtok(buf, " \t");
+          n = 0;
+          while (ch != NULL) {
+            strcpy(words[n++],ch);
+            ch = strtok(NULL, " \t");
           }
+          if ( n > 3 ) {
+            speed = atoi(words[3]) * defSpeed / 100;
+            sprintf(words[3],"%d",speed);
+            n = join(buf,n);
+            strip(buf);
+          }
+        } else if ( strstr(buf,"autogen_tree") ) {   /* ignore trees on roads */
+          shift(buf);
+          buf[0] = '#';
+        } else if ( opts == NO_HWY_LTS && strstr(buf,"HwyLt") ) {
+          shift(buf);
+          buf[0] = '#';
+          skipNext = 1;
+        } else if ( skipNext ) {
+          shift(buf);
+          buf[0] = '#';
+          skipNext = 0;
         }
         fputs(buf, out);
         fputs("\n", out);
@@ -513,14 +498,10 @@ int genFacFile(char *s) {
         strip(buf);  
         if ( strstr(buf,"fencing.png") ) {
           sprintf(buf,"TEXTURE ../../%s/objects/ground/fencing.png",XSCENE);
-        } else {
-          if ( strstr(buf,"Roof_Asphalt.png") ) {
-            sprintf(buf,"TEXTURE ../../%s/objects/blank.dds",XSCENE);
-          } else {
-            if ( strstr(buf,"Omni_Parking_Lit.obj") ) {
-              sprintf(buf,"OBJ ../../%s/objects/ground/Omni_Parking_Lit.obj",XSCENE);
-            }
-          }
+        } else if ( strstr(buf,"Roof_Asphalt.png") ) {
+          sprintf(buf,"TEXTURE ../../%s/objects/blank.dds",XSCENE);
+        } else if ( strstr(buf,"Omni_Parking_Lit.obj") ) {
+          sprintf(buf,"OBJ ../../%s/objects/ground/Omni_Parking_Lit.obj",XSCENE);
         }
         fputs(buf, out);
         fputs("\n", out);
