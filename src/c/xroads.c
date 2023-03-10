@@ -7,7 +7,7 @@
 # 
 */
 
-#define VERSION "0.32"
+#define VERSION "0.35"
 
 #ifdef _WIN32
   #include <windows.h>
@@ -34,10 +34,11 @@
 #include <string.h>
 #include <sys/types.h>
 
-#define defSpeed     70	/*  reduce speed of IA cars to 70 % */
-#define MAX_TXT      1024
-#define MAX_WRD      256
-#define NO_HWY_LTS   1
+#define defSpeed         70	/*  reduce speed of IA cars to 70 % */
+#define MAX_TXT          1024
+#define MAX_WRD          256
+#define OPT_NO_HWY_LTS   0x01
+#define OPT_LHT          0x02
 
 #define XSCENERYDIR  "./Custom Scenery"
 #define XROADSDIR    XSCENERYDIR"/Xroads"
@@ -287,14 +288,24 @@ int genLibrary() {
 
   if ( (fp = fopen(XLIB,"w")) != NULL ) {
     printf("creating library.txt\n");
-    fputs("A\n800\nLIBRARY\n\nREGION_DEFINE Xroads\n",fp);
+    fputs("A\n800\nLIBRARY\n",fp);
+
+    /*  add optional tile coordinates to library */
+    if ( (opt = fopen("xroads.pre","r")) ) {
+      printf("prepending xroads.pre\n");
+      while ( fgets(buf, MAX_TXT, opt) != NULL ) {
+        fputs(buf,fp);
+      }
+      fclose(opt);
+    }
+    fputs("\nREGION_DEFINE Xroads\n",fp);
 
     d = opendir(XSCENERYDIR);
     if (d) {
       while ((dir = readdir(d)) != NULL) {
         if( ! strncmp(dir->d_name,"zOrtho",strlen("zOrtho")) || 
             ! strncmp(dir->d_name,"zVStates",strlen("zVStates")) ||
-            ! strncmp(dir->d_name,"z_ortho",strlen("z_ortho")) ) {
+            ! strncmp(dir->d_name,"z_",strlen("z_")) ) {
 
           /* ortho folder */
           strcpy(buf1,XSCENERYDIR);
@@ -372,7 +383,7 @@ int genLibrary() {
     }
 
     /* add net file re-routes */
-    fputs("\nREGION Xroads\nEXPORT_EXCLUDE lib/g10/roads.net 1000_roads/roads.net\nEXPORT_EXCLUDE lib/g10/roads_EU.net 1000_roads/roads_EU.net\n",fp);
+    fputs("\nREGION Xroads\nEXPORT lib/g10/roads.net 1000_roads/roads.net\nEXPORT lib/g10/roads_EU.net 1000_roads/roads_EU.net\n",fp);
 
     /* add object re-routes */
     if ( hasXE ) {
@@ -402,7 +413,7 @@ int genLibrary() {
 
 /*-----------------------------------------------------------------*/
 
-int genNetFile(char *s,int opts) {
+int genNetFile(char *s_in,char *s_out, int opts) {
 
   FILE *in,*out;
   char infile[MAX_TXT];
@@ -413,25 +424,27 @@ int genNetFile(char *s,int opts) {
   unsigned int n = 0;
   int rail = 0;
   int hwy = 0;
+  int lht = 0;
   int skipNext = 0;
   
 
-  sprintf(infile,"%s/%s",DEFROADS,s);
-  sprintf(outfile,"%s/%s",XROADS,s);
+  sprintf(infile,"%s/%s",DEFROADS,s_in);
+  sprintf(outfile,"%s/%s",XROADS,s_out);
   if ( (in = fopen(infile,"r")) ) {
     if ( (out = fopen(outfile,"w")) ) {
-      printf("creating %s\n",s);
+      printf("creating %s\n",s_out);
       while ( fgets(buf, MAX_TXT, in) ) {
         strip(buf);
         if ( strstr(buf,"# Group: ") ) {
           if ( strstr(buf,"GRPHwyBYTs") || strstr(buf,"GRP_HIGHWAYS") ) {
             hwy = 1;
+          } else if ( (strstr(buf,"GRPLocal") || strstr(buf,"GRPPrimary") || strstr(buf,"GRPSecondary")) && ! strstr(buf,"OneW") ) {
+            lht = 1;
+          } else if ( strstr(buf,"GRP_RAIL") ) {
+            rail = 1;
           } else {
-            if ( strstr(buf,"GRP_RAIL") ) {
-              rail = 1;
-            } else {
-              hwy = 0;
-            }
+            hwy = 0;
+            lht = 0;
           }
         } else if ( ! hwy && ! rail && ( strstr(buf,"QUAD ") || strstr(buf,"TRI ") ) ) {
           shift(buf);
@@ -447,6 +460,12 @@ int genNetFile(char *s,int opts) {
             ch = strtok(NULL, " \t");
           }
           if ( n > 3 ) {
+            if ( lht && (opts&OPT_LHT) ) {
+              if ( words[1][0] == '0' )  // swap RH/LH driving
+                words[1][0] = '1';
+              else
+                words[1][0] = '0';
+            }
             speed = atoi(words[3]) * defSpeed / 100;
             sprintf(words[3],"%d",speed);
             n = join(buf,n);
@@ -455,7 +474,7 @@ int genNetFile(char *s,int opts) {
         } else if ( strstr(buf,"autogen_tree") ) {   /* ignore trees on roads */
           shift(buf);
           buf[0] = '#';
-        } else if ( opts == NO_HWY_LTS && strstr(buf,"HwyLt") ) {
+        } else if ( (opts&OPT_NO_HWY_LTS) && (strstr(buf,"HwyLt") || strstr(buf,"RmpLt")) ) {
           shift(buf);
           buf[0] = '#';
           skipNext = 1;
@@ -577,8 +596,10 @@ int main(int argc, char **argv) {
     printf("%s exists\n",XOBJECTS);
   }
 
-  genNetFile("roads.net",0);
-  genNetFile("roads_EU.net",NO_HWY_LTS);
+  genNetFile("roads.net",   "roads.net",0);
+  genNetFile("roads_EU.net","roads_EU.net",OPT_NO_HWY_LTS);
+  genNetFile("roads.net",   "roads_LH.net",OPT_LHT);
+  genNetFile("roads_EU.net","roads_UK.net",OPT_NO_HWY_LTS|OPT_LHT);
 
   if ( ! isDir(XROBJS) ) {
     if ( mkdir(XROBJS,0755) ) {

@@ -10,15 +10,15 @@ During the creation of the new roads.net files, the "speed" of the AI cars is be
 After installation you simply run the binary again if Ortho tiles have been added or deleted. The program will then just update the existing library.txt accordingly.
 
 
-New since version 0.12.0:
-
-"xroads" looks for files and shortcuts starting with "zOrtho4XP\_\*" to get the tile coordinates. It is also scanning the "Earth nav data" folder inside sceneries folders (or symlinks) whos name start with "zOrtho". The difference is, that it still works on Ortho4XP tiles as before, but it also works on "Ortho bundles", which cover multiple tiles, like the "US Orthophotos" provided by @Forkboy2. To hide the autogen roads on them, just rename your scenery folder to start with "zOrtho" and run the program. That's it.
+"xroads" looks for files and shortcuts starting with "zOrtho4XP\_\*" to get the tile coordinates. It is also scanning the "Earth nav data" folder inside sceneries folders (or symlinks) whos name start with "zOrtho" and "z_". The difference is, that it still works on Ortho4XP tiles as before, but it also works on "Ortho bundles", which cover multiple tiles, like the "US Orthophotos" provided by @Forkboy2. To hide the autogen roads on them, just rename your scenery folder to start with "zOrtho" and run the program. That's it.
 
 Some examples:
 
     zOrtho4XP_+48+011
     zOrtho_some_cool_ortho
     zOrtho_Forkboy2_California_v5
+    z_ortho_1234
+    z_ParisTexas
 
 
 # Installation
@@ -29,8 +29,9 @@ It also creates a "library.txt" file inside the "Custom Scenery/Xroads" folder. 
 
 To improve the great X-Europe scenery even more, it creats dummy objects and facades to "hide" the parking lots and solar panels, to also use the satellite image rather than the gray autogen polygons. 
 
-The content of an optional xroads.opt is being appended to the library.txt, which allows manual additions.
+The content of an optional xroads.pre in the same folder is being inserted before the region definiteion. This alloes to define own aditional regions, i.e. to select net files for LH-driving.
 The content of an optional xroads.add in the same folder is being inserted after the tile coordinates. This allows to set non-Ortho tiles to use "transparent roads" as well.
+The content of an optional xroads.opt is being appended to the library.txt, which allows manual additions.
 
 
 # Uninstall
