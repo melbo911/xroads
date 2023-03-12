@@ -7,7 +7,7 @@
 # 
 */
 
-#define VERSION "0.35"
+#define VERSION "0.36"
 
 #ifdef _WIN32
   #include <windows.h>
@@ -375,15 +375,13 @@ int genLibrary() {
     if ( (opt = fopen("xroads.add","r")) ) {
       printf("appending xroads.add\n");
       while ( fgets(buf, MAX_TXT, opt) != NULL ) {
-        if ( strlen(buf) > 1 ) { /* skip empty lines */
-          fputs(buf,fp);
-        }
+        fputs(buf,fp);
       }
       fclose(opt);
     }
 
     /* add net file re-routes */
-    fputs("\nREGION Xroads\nEXPORT lib/g10/roads.net 1000_roads/roads.net\nEXPORT lib/g10/roads_EU.net 1000_roads/roads_EU.net\n",fp);
+    fputs("\nREGION Xroads\nEXPORT_EXCLUDE lib/g10/roads.net 1000_roads/roads.net\nEXPORT_EXCLUDE lib/g10/roads_EU.net 1000_roads/roads_EU.net\n",fp);
 
     /* add object re-routes */
     if ( hasXE ) {
@@ -397,9 +395,7 @@ int genLibrary() {
     if ( (opt = fopen("xroads.opt","r")) ) {
       printf("appending xroads.opt\n");
       while ( fgets(buf, MAX_TXT, opt) != NULL ) {
-        if ( strlen(buf) > 1 ) { /* skip empty lines */
-          fputs(buf,fp);
-        }
+        fputs(buf,fp);
       }
       fclose(opt);
     }
@@ -438,7 +434,9 @@ int genNetFile(char *s_in,char *s_out, int opts) {
         if ( strstr(buf,"# Group: ") ) {
           if ( strstr(buf,"GRPHwyBYTs") || strstr(buf,"GRP_HIGHWAYS") ) {
             hwy = 1;
-          } else if ( (strstr(buf,"GRPLocal") || strstr(buf,"GRPPrimary") || strstr(buf,"GRPSecondary")) && ! strstr(buf,"OneW") ) {
+          } else if ( (strstr(buf,"GRPLocal") || strstr(buf,"GRPPrimary") || 
+                      strstr(buf,"GRP_rail") || strstr(buf,"GRPSecondary")) && 
+                      ! strstr(buf,"OneW") ) {
             lht = 1;
           } else if ( strstr(buf,"GRP_RAIL") ) {
             rail = 1;
