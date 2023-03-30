@@ -7,7 +7,7 @@
 # 
 */
 
-#define VERSION "0.36"
+#define VERSION "0.37"
 
 #ifdef _WIN32
   #include <windows.h>
@@ -304,6 +304,7 @@ int genLibrary() {
     if (d) {
       while ((dir = readdir(d)) != NULL) {
         if( ! strncmp(dir->d_name,"zOrtho",strlen("zOrtho")) || 
+            ! strncmp(dir->d_name,"zPhoto",strlen("zPhoto")) ||
             ! strncmp(dir->d_name,"zVStates",strlen("zVStates")) ||
             ! strncmp(dir->d_name,"z_",strlen("z_")) ) {
 
