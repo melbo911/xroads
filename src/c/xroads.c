@@ -7,7 +7,7 @@
 # 
 */
 
-#define VERSION "0.37"
+#define VERSION "0.38"
 
 #ifdef _WIN32
   #include <windows.h>
@@ -433,17 +433,17 @@ int genNetFile(char *s_in,char *s_out, int opts) {
       while ( fgets(buf, MAX_TXT, in) ) {
         strip(buf);
         if ( strstr(buf,"# Group: ") ) {
+          hwy = 0;
+          rail = 0;
+          lht = 0;
           if ( strstr(buf,"GRPHwyBYTs") || strstr(buf,"GRP_HIGHWAYS") ) {
             hwy = 1;
-          } else if ( (strstr(buf,"GRPLocal") || strstr(buf,"GRPPrimary") || 
-                      strstr(buf,"GRP_rail") || strstr(buf,"GRPSecondary")) && 
+          } else if (strstr(buf,"GRP_RAIL") || strstr(buf,"GRP_rail") ) {
+            rail = 1;
+          } else if ( (strstr(buf,"GRPLocal") || strstr(buf,"GRPPrimary") ||
+                      strstr(buf,"GRPSecondary") || strstr(buf,"GRP_basic_plugs") ) && 
                       ! strstr(buf,"OneW") ) {
             lht = 1;
-          } else if ( strstr(buf,"GRP_RAIL") ) {
-            rail = 1;
-          } else {
-            hwy = 0;
-            lht = 0;
           }
         } else if ( ! hwy && ! rail && ( strstr(buf,"QUAD ") || strstr(buf,"TRI ") ) ) {
           shift(buf);
