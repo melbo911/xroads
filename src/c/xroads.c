@@ -563,8 +563,10 @@ int main(int argc, char **argv) {
       lhDriving = 1;
     } else if ( ! strcmp(argv[i],"-h") ) {
       /* show help */
-      printf("usage: %s [-v velocity] [-l] [-h]\n",argv[0]);
-      printf("\n\t-v  set percentage of default car velocity\n\t-l  left hand driving support\n\t-h  this help\n\n");
+      printf("\n  usage: %s [-v velocity] [-l] [-h]\n\n",argv[0]);
+      printf("    -v  set percentage of default car velocity\n"
+             "    -l  left hand driving support\n"
+             "    -h  this help\n\n");
       return(0);
     }
     i++;
