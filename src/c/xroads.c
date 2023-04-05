@@ -1,13 +1,13 @@
 /*
 #
-# melbo @ https://x-plane.org
+# melbo @ https:/x-plane.org
 #
 # 
 # compile:   cl xroads.c /D "NODEBUG" /O2 /link Ole32.lib
 # 
 */
 
-#define VERSION "0.38"
+#define VERSION "0.39"
 
 #ifdef _WIN32
   #include <windows.h>
@@ -62,6 +62,8 @@ char *XSCENES[100] = {
 };
 
 int  hasXE           = 0;
+int  carSpeed        = defSpeed;
+int  lhDriving       = 0;
 char XSCENE[MAX_TXT] = "";
 char XTEST[MAX_TXT]  = "";
 char words[MAX_WRD][MAX_TXT];
@@ -465,7 +467,7 @@ int genNetFile(char *s_in,char *s_out, int opts) {
               else
                 words[1][0] = '0';
             }
-            speed = atoi(words[3]) * defSpeed / 100;
+            speed = atoi(words[3]) * carSpeed / 100;
             sprintf(words[3],"%d",speed);
             n = join(buf,n);
             strip(buf);
@@ -539,9 +541,35 @@ int genFacFile(char *s) {
 int main(int argc, char **argv) {
 
   char tmp[256];
-  int i;
+  int i,n;
 
   printf("Xroads - %s - melbo @x-plane.org\n",VERSION);
+
+  /* parsing command line parameters */
+  i = 1;
+ 
+  while ( i < argc ) {
+    if ( ! strcmp(argv[i],"-v") && i+1 < argc ) {
+      /* set car velocity */
+      i++;
+      n = atoi(argv[i]);
+      if ( n >= 50 && n <= 100 ) {
+        carSpeed = n;
+      } else {
+        printf("invalid velocity %d%%\n",n);
+      }
+	} else  if ( ! strcmp(argv[i],"-l") ) {
+      /* set left hand driving support */
+      lhDriving = 1;
+    } else if ( ! strcmp(argv[i],"-h") ) {
+      /* show help */
+      printf("usage: %s [-v velocity] [-l] [-h]\n",argv[0]);
+      printf("\n\t-v  set percentage of default car velocity\n\t-l  left hand driving support\n\t-h  this help\n\n");
+      return(0);
+    }
+    i++;
+  }
+  printf("setting car velocity to %d%%\n",carSpeed);
 
 #ifndef _WIN32
   strcpy(tmp,dirname(argv[0]));
@@ -597,8 +625,10 @@ int main(int argc, char **argv) {
 
   genNetFile("roads.net",   "roads.net",0);
   genNetFile("roads_EU.net","roads_EU.net",OPT_NO_HWY_LTS);
-  genNetFile("roads.net",   "roads_LH.net",OPT_LHT);
-  genNetFile("roads_EU.net","roads_UK.net",OPT_NO_HWY_LTS|OPT_LHT);
+  if ( lhDriving ) {
+    genNetFile("roads.net",   "roads_LH.net",OPT_LHT);
+    genNetFile("roads_EU.net","roads_UK.net",OPT_NO_HWY_LTS|OPT_LHT);
+  }
 
   if ( ! isDir(XROBJS) ) {
     if ( mkdir(XROBJS,0755) ) {

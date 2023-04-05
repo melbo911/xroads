@@ -1,0 +1,64 @@
+0.39 added cmdline options for setting car velocity and left-hand-driving support
+
+      % ./xroads_0.39 -h
+      Xroads - 0.39 - melbo @x-plane.org
+      usage: ./xroads_0.39 [-v velocity] [-l] [-h]
+      
+	      -v  set percentage of default car velocity
+	      -l  left hand driving support
+	      -h  this help
+
+
+0.38 hide also GRP_basic_plug elements as suggested by @Geoff Lohr
+
+0.37 support for zPhoto..* folders as requested by @bastienvdc
+
+0.32 code cleanup
+
+0.31 removed lights along the highway/autobahn in Europe
+
+0.30 support for Windows ShortCuts
+
+0.25 support ortho folders and sub-folders named "zVStates..."
+
+0.24 support ortho folders named "z_ortho..." and code cleanup
+
+0.23 fixed the false-positive virus alarms
+
+0.21.0 Added support for X-Europe/America 5.10 on XP11
+
+0.20 Added support for X-World Europe , America .... , tested with "X-World Europe"
+
+0.19 Fixed usage of parking cars and trucks from X-Europe, verified Xroads works with X-Plane 12
+
+0.18 Removed modified WIRE LOD lines from roads.net, because recent X-Plane versions ignore it anyway
+
+0.17 Missing definition for Omni_Parking_Lit.obj in X-Plane 11.35
+
+0.16 LOD of power lines reduced further down to 2000.
+
+0.15 LOD for high voltage power wires set to 3000.
+
+0.14.0 Parking grounds now show cars again (based on an idea from @Bulva).
+
+0.13 Added sanity check on Shortcut names.
+
+0.12 Xroads now also supports Windows Shortcuts to Ortho4XP tiles.
+
+0.11 Exclude autogen trees along highways. Inspired by the recent X-Europe Network Mod.
+
+0.10 Added support for Ortho bundles. Read text above.
+
+0.9.1 Added missing symlink/junction to road objects.
+
+0.9.0 Selection code optimized.
+
+0.8.8 Support for non Ortho4XP tiles.
+
+0.8.7 Fixed missing some rail junctions.
+
+0.8.6 Improved macOS compatibility.
+
+0.8.5 Initial upload.
+
+
