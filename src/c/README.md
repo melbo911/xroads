@@ -25,13 +25,15 @@ Some examples:
 Xroads "help" and command line options (macos example):
 
    % ./xroads.app -h
-   Xroads - 0.39 - melbo @x-plane.org
+   Xroads - 0.41 - melbo @x-plane.org
 
-     usage: ./xroads.app [-v velocity] [-l] [-h]
+  usage: ./xroads [-v velocity] [-r] [-l] [-h]
 
-       -v  set percentage of default car velocity
-       -l  left hand driving support
-       -h  this help
+    -v  set percentage of default car velocity
+    -l  left hand driving support
+    -r  hide rail tracks
+    -h  this help
+
 
 
 

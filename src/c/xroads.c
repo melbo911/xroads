@@ -1,13 +1,13 @@
 /*
 #
-# melbo @ https:/x-plane.org
+# melbo @ https://x-plane.org
 #
 # 
 # compile:   cl xroads.c /D "NODEBUG" /O2 /link Ole32.lib
 # 
 */
 
-#define VERSION "0.39"
+#define VERSION "0.41"
 
 #ifdef _WIN32
   #include <windows.h>
@@ -64,6 +64,7 @@ char *XSCENES[100] = {
 int  hasXE           = 0;
 int  carSpeed        = defSpeed;
 int  lhDriving       = 0;
+int  noRails         = 0;
 char XSCENE[MAX_TXT] = "";
 char XTEST[MAX_TXT]  = "";
 char words[MAX_WRD][MAX_TXT];
@@ -392,7 +393,6 @@ int genLibrary() {
     } else {
       fputs("EXPORT_EXCLUDE simheaven/ground/parking_cars.fac   objects/blank.fac\nEXPORT_EXCLUDE simheaven/ground/parking_trucks.fac  objects/blank.fac\n",fp);
     }
-    fputs("EXPORT_EXCLUDE simheaven/ground/solar_panel.obj    objects/blank.obj\n",fp);
 
     /* add optional lines to the end of the library */
     if ( (opt = fopen("xroads.opt","r")) ) {
@@ -440,7 +440,7 @@ int genNetFile(char *s_in,char *s_out, int opts) {
           lht = 0;
           if ( strstr(buf,"GRPHwyBYTs") || strstr(buf,"GRP_HIGHWAYS") ) {
             hwy = 1;
-          } else if (strstr(buf,"GRP_RAIL") || strstr(buf,"GRP_rail") ) {
+          } else if ( ! noRails && (strstr(buf,"GRP_RAIL") || strstr(buf,"GRP_rail")) ) {
             rail = 1;
           } else if ( (strstr(buf,"GRPLocal") || strstr(buf,"GRPPrimary") ||
                       strstr(buf,"GRPSecondary") || strstr(buf,"GRP_basic_plugs") ) && 
@@ -555,23 +555,29 @@ int main(int argc, char **argv) {
       n = atoi(argv[i]);
       if ( n >= 50 && n <= 100 ) {
         carSpeed = n;
+		printf("setting car velocity to %d%%\n",carSpeed);
       } else {
         printf("invalid velocity %d%%\n",n);
       }
 	} else  if ( ! strcmp(argv[i],"-l") ) {
       /* set left hand driving support */
       lhDriving = 1;
+	  printf("left-hand-driving enabled\n");
+	} else  if ( ! strcmp(argv[i],"-r") ) {
+      /* hide rail tracks */
+      noRails = 1;
+	  printf("hiding rail tracks enabled\n");
     } else if ( ! strcmp(argv[i],"-h") ) {
       /* show help */
-      printf("\n  usage: %s [-v velocity] [-l] [-h]\n\n",argv[0]);
+      printf("\n  usage: %s [-v velocity] [-r] [-l] [-h]\n\n",argv[0]);
       printf("    -v  set percentage of default car velocity\n"
              "    -l  left hand driving support\n"
+             "    -r  hide rail tracks\n"
              "    -h  this help\n\n");
       return(0);
     }
     i++;
   }
-  printf("setting car velocity to %d%%\n",carSpeed);
 
 #ifndef _WIN32
   strcpy(tmp,dirname(argv[0]));
