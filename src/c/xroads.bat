@@ -12,9 +12,6 @@ rem xroads.exe -v 80
 rem enable left-hand-driving support 
 rem xroads.exe -l
 
-rem enable left-hand-driving support 
-rem xroads.exe -l
-
 rem also hide rail tracks
 rem xroads.exe -r
 
