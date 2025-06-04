@@ -7,7 +7,7 @@
 # 
 */
 
-#define VERSION "0.41"
+#define VERSION "0.43"
 
 #ifdef _WIN32
   #include <windows.h>
@@ -61,10 +61,12 @@ char *XSCENES[100] = {
   NULL
 };
 
+int  debug           = 0;
 int  hasXE           = 0;
 int  carSpeed        = defSpeed;
 int  lhDriving       = 0;
 int  noRails         = 0;
+int  noLights        = 0;
 char XSCENE[MAX_TXT] = "";
 char XTEST[MAX_TXT]  = "";
 char words[MAX_WRD][MAX_TXT];
@@ -306,6 +308,7 @@ int genLibrary() {
     d = opendir(XSCENERYDIR);
     if (d) {
       while ((dir = readdir(d)) != NULL) {
+        if ( debug ) printf("trying %s ...\n",dir->d_name);
         if( ! strncmp(dir->d_name,"zOrtho",strlen("zOrtho")) || 
             ! strncmp(dir->d_name,"zPhoto",strlen("zPhoto")) ||
             ! strncmp(dir->d_name,"zVStates",strlen("zVStates")) ||
@@ -317,7 +320,7 @@ int genLibrary() {
           strcat(buf1,dir->d_name);
 #ifdef _WIN32
           if ( strstr(dir->d_name,".lnk") ) {       //  if shortcut, resolve target          
-            // printf("trying shortcut %s ...\n",dir->d_name);
+            if ( debug ) printf("is shortcut\n",dir->d_name);
             mbstowcs(wshortcut,buf1,MAX_PATH);
             rc = GetShortcutTargetPath(wshortcut);
             if ( ! rc ) {
@@ -329,21 +332,23 @@ int genLibrary() {
           }
 #endif
           strcat(buf1,"/Earth nav data");  
-          // printf("trying1 %s \n", buf1);
+          if ( debug ) printf("trying1 %s\n", buf1);
           e = opendir(buf1);
           if (e) {
+            if ( debug ) printf("  has Earth nav data\n");
             while ((earth = readdir(e)) != NULL) {    /* scan earth nav data */
               if ( earth->d_name[0] != '.' ) {
                 strcpy(buf2,buf1);
                 strcat(buf2,"/");
                 strcat(buf2,earth->d_name);
-                // printf("trying2 %s \n", buf2);
+                if ( debug ) printf("trying2 %s \n", buf2);
                 l = opendir(buf2);
                 if (l) {
                   while ((lonlat = readdir(l)) != NULL) {
                     /* ignore backup files */ 
                     if( strstr(lonlat->d_name,".dsf") &&\
                        strlen(lonlat->d_name) < 12 ) {
+                      if ( debug ) printf("found DSF %s\n", lonlat->d_name);
                       printf("adding %s\n",lonlat->d_name);
                       strncpy(lon,&lonlat->d_name[0],3);
                       lon[3] = '\0';
@@ -359,6 +364,7 @@ int genLibrary() {
             }
             closedir(e);
           } else if( strstr(dir->d_name,"zOrtho4XP_") ) {
+            if ( debug ) printf("using lat/lon from name %s\n",dir->d_name);
             strcpy(buf,dir->d_name);
             strncpy(lon,&buf[10],3);
             lon[3] = '\0';
@@ -368,7 +374,11 @@ int genLibrary() {
               printf("adding %s\n",dir->d_name);
               sprintf(buf,"REGION_RECT %s %s %s %s\n", lat,lon,lat,lon);
               fputs(buf,fp);
+            } else {
+              printf("wrong lat/lon format\n");
             }
+          } else {
+             printf("name does not start with zOrtho4XP_\n");
           }
         }
       }
@@ -424,6 +434,7 @@ int genNetFile(char *s_in,char *s_out, int opts) {
   int rail = 0;
   int hwy = 0;
   int lht = 0;
+  int rurds = 0;     // rural roads
   int skipNext = 0;
   
 
@@ -438,17 +449,37 @@ int genNetFile(char *s_in,char *s_out, int opts) {
           hwy = 0;
           rail = 0;
           lht = 0;
+          rurds = 0;
           if ( strstr(buf,"GRPHwyBYTs") || strstr(buf,"GRP_HIGHWAYS") ) {
             hwy = 1;
           } else if ( ! noRails && (strstr(buf,"GRP_RAIL") || strstr(buf,"GRP_rail")) ) {
             rail = 1;
+/*
           } else if ( (strstr(buf,"GRPLocal") || strstr(buf,"GRPPrimary") ||
                       strstr(buf,"GRPSecondary") || strstr(buf,"GRP_basic_plugs") ) && 
                       ! strstr(buf,"OneW") ) {
-            lht = 1;
+*/
+          } else if ( strstr(buf,"GRPLocal") ) {
+            if ( ! strstr(buf,"OneW") ) 
+               lht = 1;
+          } else if ( strstr(buf,"GRPPrimary") )  {
+            if ( ! strstr(buf,"OneW") ) 
+               lht = 1;
+            rurds = 1;
+          } else if ( strstr(buf,"GRPSecondary") )  {
+            if ( ! strstr(buf,"OneW") ) 
+               lht = 1;
+            rurds = 1;
+          } else if ( strstr(buf,"GRP_basic_plugs") )  {
+            if ( ! strstr(buf,"OneW") ) 
+               lht = 1;
+            rurds = 1;
           }
-        } else if ( ! hwy && ! rail && ( strstr(buf,"QUAD ") || strstr(buf,"TRI ") ) ) {
+       } else if ( ! hwy && ! rail && ( strstr(buf,"QUAD ") || strstr(buf,"TRI ") ) ) {
           shift(buf);
+          buf[0] = '#';
+        } else if ( noLights && rurds && strstr(buf,"streetlights") ) {     // hide street lights
+          shift(buf); 
           buf[0] = '#';
         } else if ( ! rail && strstr(buf,"SEGMENT_DRAPED ") ) {
           shift(buf); 
@@ -567,12 +598,22 @@ int main(int argc, char **argv) {
       /* hide rail tracks */
       noRails = 1;
 	  printf("hiding rail tracks enabled\n");
+	} else  if ( ! strcmp(argv[i],"-s") ) {
+      /* hide street lights */
+      noLights = 1;
+	  printf("hiding street lights enabled\n");
+	} else  if ( ! strcmp(argv[i],"-d") ) {
+      /* print debug info */
+      debug = 1;
+	  printf("printing debug information\n");
     } else if ( ! strcmp(argv[i],"-h") ) {
       /* show help */
-      printf("\n  usage: %s [-v velocity] [-r] [-l] [-h]\n\n",argv[0]);
+      printf("\n  usage: %s [-v velocity] [-l] [-r] [-s] [-d] [-h]\n\n",argv[0]);
       printf("    -v  set percentage of default car velocity\n"
              "    -l  left hand driving support\n"
              "    -r  hide rail tracks\n"
+             "    -s  hide street lights\n"
+             "    -d  print debug information\n"
              "    -h  this help\n\n");
       return(0);
     }
