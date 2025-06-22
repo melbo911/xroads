@@ -29,4 +29,3 @@ rem xroads.exe -v 80 -r -s
 rem use xroads default settings
 xroads.exe
 
-pause

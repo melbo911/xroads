@@ -1,8 +1,8 @@
 
-% ./xroads_0.43 -h
-Xroads - 0.43 - melbo @x-plane.org
+% ./xroads_0.46 -h
+Xroads - 0.46 - melbo @x-plane.org
 
-  usage: ./xroads_0.43 [-v velocity] [-l] [-r] [-s] [-d] [-h]
+  usage: ./xroads_0.46 [-v velocity] [-l] [-r] [-s] [-d] [-h]
 
     -v  set percentage of default car velocity
     -l  left hand driving support
@@ -11,6 +11,10 @@ Xroads - 0.43 - melbo @x-plane.org
     -d  print debug information
     -h  this help
 
+
+0.46 check if filesystem supports links
+
+0.45 support for X-Plane Map Enhancement
 
 0.43 added "-d" flag to provide additional debug information
 

@@ -27,9 +27,9 @@ Xroads "help" and command line options (macos example):
 
 
    % ./xroads
-   Xroads - 0.43 - melbo @x-plane.org
+   Xroads - 0.46 - melbo @x-plane.org
 
-     usage: ./xroads_0.43 [-v velocity] [-l] [-r] [-s] [-d] [-h]
+     usage: ./xroads [-v velocity] [-l] [-r] [-s] [-d] [-h]
 
        -v  set percentage of default car velocity
        -l  left hand driving support

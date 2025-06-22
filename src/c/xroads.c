@@ -7,7 +7,7 @@
 # 
 */
 
-#define VERSION "0.43"
+#define VERSION "0.46"
 
 #ifdef _WIN32
   #include <windows.h>
@@ -78,8 +78,15 @@ char words[MAX_WRD][MAX_TXT];
 char targetPath[MAX_PATH];
 wchar_t wshortcut[MAX_PATH];
 
-int GetShortcutTargetPath(const char* shortcutFile)
-{
+int GetShortcutTargetPath(const char* shortcutFile) {
+
+    WCHAR wszPath[MAX_PATH];
+
+    // Convert input path to wide chars using proper Windows API
+    if (MultiByteToWideChar(CP_UTF8, 0, shortcutFile, -1, wszPath, MAX_PATH) == 0) {
+        return 7;  // conversion failed
+    }
+
     // Initialize the COM library
     HRESULT hr = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
     if (FAILED(hr))
@@ -107,7 +114,7 @@ int GetShortcutTargetPath(const char* shortcutFile)
     }
 
     // Load the shortcut file
-    hr = pPersistFile->lpVtbl->Load(pPersistFile, shortcutFile, STGM_READ);
+    hr = pPersistFile->lpVtbl->Load(pPersistFile, wszPath, STGM_READ);
     if (FAILED(hr))
     {
         pPersistFile->lpVtbl->Release(pPersistFile);
@@ -117,8 +124,8 @@ int GetShortcutTargetPath(const char* shortcutFile)
     }
 
     // Get the target path of the shortcut
-    //wchar_t szTargetPath[MAX_PATH];
-    hr = pShellLink->lpVtbl->GetPath(pShellLink, targetPath, MAX_PATH, NULL, SLGP_RAWPATH);
+    //char wszTargetPath[MAX_PATH];
+    hr = pShellLink->lpVtbl->GetPath(pShellLink, targetPath, MAX_PATH, NULL, 0);
     if (FAILED(hr))
     {
         pPersistFile->lpVtbl->Release(pPersistFile);
@@ -128,19 +135,49 @@ int GetShortcutTargetPath(const char* shortcutFile)
     }
 
     // Convert the target path to a multi-byte string
-    if (!targetPath)
-    {
-        pPersistFile->lpVtbl->Release(pPersistFile);
-        pShellLink->lpVtbl->Release(pShellLink);
-        CoUninitialize();
-        return 6;
-    }
+    // Convert the wide target path back to multi-byte
+    //if (WideCharToMultiByte(CP_UTF8, 0, wszTargetPath, -1, targetPath, MAX_PATH, NULL, NULL) == 0) {
+    //    pPersistFile->lpVtbl->Release(pPersistFile);
+    //    pShellLink->lpVtbl->Release(pShellLink);
+    //    CoUninitialize();
+    //    return 6;
+    //}
 
     // Clean up and return the target path
     pPersistFile->lpVtbl->Release(pPersistFile);
     pShellLink->lpVtbl->Release(pShellLink);
     CoUninitialize();
     return 0;
+}
+
+/*-----------------------------------------------------------------*/
+
+int checkFilesystemType() {
+
+   TCHAR volName[MAX_PATH+1];
+   TCHAR fsName[MAX_PATH+1];
+   DWORD serNum = 0;
+   DWORD maxLen = 0;
+   DWORD fsFlags = 0;
+
+   if (GetVolumeInformation( NULL,
+     volName,
+     sizeof(volName),
+     &serNum,
+     &maxLen,
+     &fsFlags,
+     fsName,
+     sizeof(fsName)) == TRUE)
+   {
+     if ( fsFlags & FILE_SUPPORTS_HARD_LINKS ) {  // 0x00400000
+        wprintf(L"cool, file system supports links\n");
+     } else {
+        wprintf(L"WARNING: file system does not support links\n");
+     }            
+   } else {
+     wprintf(L"GetVolumeInformation() failed, error %u\n", GetLastError());
+   }
+   return 0;
 }
 
 #endif
@@ -308,10 +345,20 @@ int genLibrary() {
     d = opendir(XSCENERYDIR);
     if (d) {
       while ((dir = readdir(d)) != NULL) {
+        
+        if ( debug ) {        
+          printf("name bytes: ");
+          for (int i = 0; dir->d_name[i] != '\0'; i++) {
+            printf("%02X ", (unsigned char)dir->d_name[i]);
+          }
+          printf("\n");
+        }
+
         if ( debug ) printf("trying %s ...\n",dir->d_name);
         if( ! strncmp(dir->d_name,"zOrtho",strlen("zOrtho")) || 
             ! strncmp(dir->d_name,"zPhoto",strlen("zPhoto")) ||
             ! strncmp(dir->d_name,"zVStates",strlen("zVStates")) ||
+            ! strncmp(dir->d_name,"XPME_",strlen("XPME_")) ||
             ! strncmp(dir->d_name,"z_",strlen("z_")) ) {
 
           /* ortho folder */
@@ -321,8 +368,7 @@ int genLibrary() {
 #ifdef _WIN32
           if ( strstr(dir->d_name,".lnk") ) {       //  if shortcut, resolve target          
             if ( debug ) printf("is shortcut\n",dir->d_name);
-            mbstowcs(wshortcut,buf1,MAX_PATH);
-            rc = GetShortcutTargetPath(wshortcut);
+            rc = GetShortcutTargetPath(buf1);
             if ( ! rc ) {
               printf("following shortcut: %s -> %s\n",dir->d_name,targetPath);
               strcpy(buf1,targetPath);
@@ -620,10 +666,14 @@ int main(int argc, char **argv) {
     i++;
   }
 
-#ifndef _WIN32
+#ifdef _WIN32
+  checkFilesystemType();
+ 
+#else    
   strcpy(tmp,dirname(argv[0]));
   printf("changing to %s\n",tmp);
   chdir(tmp);
+
 #endif
 
   if ( ! isDir(XROADSDIR) ) {
@@ -714,6 +764,8 @@ int main(int argc, char **argv) {
 
   genLibrary();
 
+  printf("\npress return ....");
+  char* p = fgets(tmp, sizeof(tmp), stdin);
 }
 
 
