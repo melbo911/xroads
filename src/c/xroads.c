@@ -7,7 +7,7 @@
 # 
 */
 
-#define VERSION "0.46"
+#define VERSION "0.47"
 
 #ifdef _WIN32
   #include <windows.h>
@@ -724,6 +724,7 @@ int main(int argc, char **argv) {
 
   genNetFile("roads.net",   "roads.net",0);
   genNetFile("roads_EU.net","roads_EU.net",OPT_NO_HWY_LTS);
+  genNetFile("roads_EU.net","roads_EU_HWL.net",0);
   if ( lhDriving ) {
     genNetFile("roads.net",   "roads_LH.net",OPT_LHT);
     genNetFile("roads_EU.net","roads_UK.net",OPT_NO_HWY_LTS|OPT_LHT);

@@ -27,7 +27,7 @@ Xroads "help" and command line options (macos example):
 
 
    % ./xroads
-   Xroads - 0.46 - melbo @x-plane.org
+   Xroads - 0.47 - melbo @x-plane.org
 
      usage: ./xroads [-v velocity] [-l] [-r] [-s] [-d] [-h]
 
@@ -83,4 +83,28 @@ Based on @troopie's idea, Xroads is now able to integrate LHD into the transpare
 First create a "xroads.add" file inside the X-Plane main folder. Its content will be included in the generated library.txt. You can simply use the one included in the ZIP file and add/remove the tile coordinates you want to use LHD. You will have to put the tiles coordinates under the Xroads_UK or Xroads_LH definition. The difference is which NET file is being used ( roads.net or roads_EU.net). The format is the same as in the existing library.txt. Actually you can just copy/paste tile coordinates from the library.txt to the xroads.add file.
 
 Next step is to run xroads ( exe or app ) with the command line option "-l" (stands for LHD). You can use the included "xroads.bat" file which you can edit with NOTEPAD or any other text-editor. Note: Starting a line with REM turns the whole line into a comment, so commands in that line are not executed. It allows you to prepare the command with parameters but you only need click on the BAT and let it pass the options automatically to the binary.
+
+# Show Highway Lights
+
+By default roads hides the lights along the EU highways. Starting from version 0.47, Xroads creates a 3rd net file which is based on the roads_EU.net but still contains highway-lghts. With a few lines in "xroads.add" this file can be used for tiles which should have light along the highways.
+
+Example to have tile +60+024 use the highway-lights net file :
+
+     add to the "xroads.add" file the following lines:
+
+            #---- start of xroads.add ---
+            # move EU tiles WITH highway lights here
+            REGION_DEFINE Xroads_HWY_LT
+            REGION_RECT +024 +60 +024 +60
+
+
+
+            REGION Xroads_HWY_LT
+            EXPORT_EXCLUDE lib/g10/roads_EU.net 1000_roads/roads_EU_HWL.net
+
+            #---- end of xroads.add ---
+
+
+and run "xroads" ( version >= 0.47 ) again.
+
 
