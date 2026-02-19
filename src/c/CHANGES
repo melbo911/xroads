@@ -1,8 +1,8 @@
 
-% ./xroads_0.47 -h
-Xroads - 0.47 - melbo @x-plane.org
+% ./xroads_0.48 -h
+Xroads - 0.48 - melbo @x-plane.org
 
-  usage: ./xroads_0.47 [-v velocity] [-l] [-r] [-s] [-d] [-h]
+  usage: ./xroads_0.48 [-v velocity] [-l] [-r] [-s] [-d] [-h]
 
     -v  set percentage of default car velocity
     -l  left hand driving support
@@ -11,6 +11,8 @@ Xroads - 0.47 - melbo @x-plane.org
     -d  print debug information
     -h  this help
 
+
+0.48 "-s" removes more cobra-head lamps in rural areas
 
 0.47 create 3rd netfile to allow lights along EU highways
 

@@ -7,7 +7,7 @@
 # 
 */
 
-#define VERSION "0.47"
+#define VERSION "0.48"
 
 #ifdef _WIN32
   #include <windows.h>
@@ -480,6 +480,7 @@ int genNetFile(char *s_in,char *s_out, int opts) {
   int rail = 0;
   int hwy = 0;
   int lht = 0;
+  int local = 0;     // local roads
   int rurds = 0;     // rural roads
   int skipNext = 0;
   
@@ -496,6 +497,7 @@ int genNetFile(char *s_in,char *s_out, int opts) {
           rail = 0;
           lht = 0;
           rurds = 0;
+          local = 0;
           if ( strstr(buf,"GRPHwyBYTs") || strstr(buf,"GRP_HIGHWAYS") ) {
             hwy = 1;
           } else if ( ! noRails && (strstr(buf,"GRP_RAIL") || strstr(buf,"GRP_rail")) ) {
@@ -508,6 +510,7 @@ int genNetFile(char *s_in,char *s_out, int opts) {
           } else if ( strstr(buf,"GRPLocal") ) {
             if ( ! strstr(buf,"OneW") ) 
                lht = 1;
+               local = 1;                      
           } else if ( strstr(buf,"GRPPrimary") )  {
             if ( ! strstr(buf,"OneW") ) 
                lht = 1;
@@ -525,6 +528,9 @@ int genNetFile(char *s_in,char *s_out, int opts) {
           shift(buf);
           buf[0] = '#';
         } else if ( noLights && rurds && strstr(buf,"streetlights") ) {     // hide street lights
+          shift(buf); 
+          buf[0] = '#';
+        } else if ( noLights && local && ((strstr(buf,"ResLt3") || strstr(buf,"ResidentialLight_04"))) ) {     // hide street lights
           shift(buf); 
           buf[0] = '#';
         } else if ( ! rail && strstr(buf,"SEGMENT_DRAPED ") ) {
