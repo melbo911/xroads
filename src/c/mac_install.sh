@@ -6,8 +6,5 @@ if [ -f $xp/xroads.app ];then
    echo "clearing quarantine flag ..."
    xattr -c "$xp/xroads"
    echo "done."
-   sleep 5
 fi
-
-
-sleep 10
+sleep 5
