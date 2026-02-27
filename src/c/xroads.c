@@ -7,7 +7,7 @@
 # 
 */
 
-#define VERSION "0.48"
+#define VERSION "0.49"
 
 #ifdef _WIN32
   #include <windows.h>
@@ -37,7 +37,7 @@
 #define defSpeed         70	/*  reduce speed of IA cars to 70 % */
 #define MAX_TXT          1024
 #define MAX_WRD          256
-#define OPT_NO_HWY_LTS   0x01
+#define OPT_HWY_LTS      0x01
 #define OPT_LHT          0x02
 
 #define XSCENERYDIR  "./Custom Scenery"
@@ -62,11 +62,14 @@ char *XSCENES[100] = {
 };
 
 int  debug           = 0;
+int  flags           = 0;
 int  hasXE           = 0;
 int  carSpeed        = defSpeed;
 int  lhDriving       = 0;
 int  noRails         = 0;
 int  noLights        = 0;
+int  noHwyLights     = 0;
+int  is_5001         = 0;
 char XSCENE[MAX_TXT] = "";
 char XTEST[MAX_TXT]  = "";
 char words[MAX_WRD][MAX_TXT];
@@ -490,6 +493,8 @@ int genNetFile(char *s_in,char *s_out, int opts) {
   if ( (in = fopen(infile,"r")) ) {
     if ( (out = fopen(outfile,"w")) ) {
       printf("creating %s\n",s_out);
+      if ( opts & OPT_HWY_LTS)     // override highway lights
+        noHwyLights = 0;
       while ( fgets(buf, MAX_TXT, in) ) {
         strip(buf);
         if ( strstr(buf,"# Group: ") ) {
@@ -498,39 +503,43 @@ int genNetFile(char *s_in,char *s_out, int opts) {
           lht = 0;
           rurds = 0;
           local = 0;
+          is_5001 = 0;
           if ( strstr(buf,"GRPHwyBYTs") || strstr(buf,"GRP_HIGHWAYS") ) {
             hwy = 1;
           } else if ( ! noRails && (strstr(buf,"GRP_RAIL") || strstr(buf,"GRP_rail")) ) {
             rail = 1;
-/*
-          } else if ( (strstr(buf,"GRPLocal") || strstr(buf,"GRPPrimary") ||
-                      strstr(buf,"GRPSecondary") || strstr(buf,"GRP_basic_plugs") ) && 
-                      ! strstr(buf,"OneW") ) {
-*/
           } else if ( strstr(buf,"GRPLocal") ) {
             if ( ! strstr(buf,"OneW") ) 
-               lht = 1;
-               local = 1;                      
+              lht = 1;
+            local = 1;                      
           } else if ( strstr(buf,"GRPPrimary") )  {
             if ( ! strstr(buf,"OneW") ) 
-               lht = 1;
+              lht = 1;
             rurds = 1;
           } else if ( strstr(buf,"GRPSecondary") )  {
             if ( ! strstr(buf,"OneW") ) 
-               lht = 1;
+              lht = 1;
             rurds = 1;
           } else if ( strstr(buf,"GRP_basic_plugs") )  {
             if ( ! strstr(buf,"OneW") ) 
-               lht = 1;
+              lht = 1;
             rurds = 1;
           }
-       } else if ( ! hwy && ! rail && ( strstr(buf,"QUAD ") || strstr(buf,"TRI ") ) ) {
+        } else if ( strstr(buf,"ROAD_TYPE") ) {
+          if ( strstr(buf,"ROAD_TYPE 5001") )
+            is_5001 = 1;
+          else
+            is_5001 = 0;
+        } else if ( ! hwy && ! rail && ( strstr(buf,"QUAD ") || strstr(buf,"TRI ") ) ) {
           shift(buf);
           buf[0] = '#';
-        } else if ( noLights && rurds && strstr(buf,"streetlights") ) {     // hide street lights
+        } else if ( noLights && (rurds || is_5001) && strstr(buf,"streetlights") ) {     // hide street lights
           shift(buf); 
           buf[0] = '#';
-        } else if ( noLights && local && ((strstr(buf,"ResLt3") || strstr(buf,"ResidentialLight_04"))) ) {     // hide street lights
+        } else if ( noLights && local && strstr(buf,"ResLt3") ) {     // hide street lights
+          shift(buf); 
+          buf[0] = '#';
+        } else if ( noLights > 1 && local && strstr(buf,"ResLt2")  ) {     // hide street lights
           shift(buf); 
           buf[0] = '#';
         } else if ( ! rail && strstr(buf,"SEGMENT_DRAPED ") ) {
@@ -558,7 +567,7 @@ int genNetFile(char *s_in,char *s_out, int opts) {
         } else if ( strstr(buf,"autogen_tree") ) {   /* ignore trees on roads */
           shift(buf);
           buf[0] = '#';
-        } else if ( (opts&OPT_NO_HWY_LTS) && (strstr(buf,"HwyLt") || strstr(buf,"RmpLt")) ) {
+        } else if ( noHwyLights && (strstr(buf,"HwyLt") || strstr(buf,"RmpLt")) ) {
           shift(buf);
           buf[0] = '#';
           skipNext = 1;
@@ -649,22 +658,31 @@ int main(int argc, char **argv) {
 	} else  if ( ! strcmp(argv[i],"-r") ) {
       /* hide rail tracks */
       noRails = 1;
-	  printf("hiding rail tracks enabled\n");
+	  printf("hiding rail tracks\n");
+	} else  if ( ! strcmp(argv[i],"-w") ) {
+      /* hide highways lights */
+      noHwyLights = 1;
+	  printf("hiding highways lights\n");
 	} else  if ( ! strcmp(argv[i],"-s") ) {
       /* hide street lights */
-      noLights = 1;
-	  printf("hiding street lights enabled\n");
+      noLights = noLights + 1;
+      if ( noLights > 1 ) {
+	     printf("hiding more street lights\n");
+      } else {
+	     printf("hiding street lights\n");
+      }
 	} else  if ( ! strcmp(argv[i],"-d") ) {
       /* print debug info */
       debug = 1;
 	  printf("printing debug information\n");
     } else if ( ! strcmp(argv[i],"-h") ) {
       /* show help */
-      printf("\n  usage: %s [-v velocity] [-l] [-r] [-s] [-d] [-h]\n\n",argv[0]);
+      printf("\n  usage: %s [-v velocity] [-l] [-r] [-s] [-w] [-d] [-h]\n\n",argv[0]);
       printf("    -v  set percentage of default car velocity\n"
              "    -l  left hand driving support\n"
              "    -r  hide rail tracks\n"
              "    -s  hide street lights\n"
+             "    -w  hide highway lights\n"
              "    -d  print debug information\n"
              "    -h  this help\n\n");
       return(0);
@@ -728,12 +746,12 @@ int main(int argc, char **argv) {
     printf("%s exists\n",XOBJECTS);
   }
 
-  genNetFile("roads.net",   "roads.net",0);
-  genNetFile("roads_EU.net","roads_EU.net",OPT_NO_HWY_LTS);
-  genNetFile("roads_EU.net","roads_EU_HWL.net",0);
+  genNetFile("roads.net",   "roads.net",flags);
+  genNetFile("roads_EU.net","roads_EU.net",flags);
+  genNetFile("roads_EU.net","roads_EU_HWL.net",flags|OPT_HWY_LTS);
   if ( lhDriving ) {
-    genNetFile("roads.net",   "roads_LH.net",OPT_LHT);
-    genNetFile("roads_EU.net","roads_UK.net",OPT_NO_HWY_LTS|OPT_LHT);
+    genNetFile("roads.net",   "roads_LH.net",flags|OPT_LHT);
+    genNetFile("roads_EU.net","roads_UK.net",flags|OPT_LHT);
   }
 
   if ( ! isDir(XROBJS) ) {

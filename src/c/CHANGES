@@ -1,16 +1,20 @@
 
-% ./xroads_0.48 -h
-Xroads - 0.48 - melbo @x-plane.org
+% ./xroads -h
+Xroads - 0.49 - melbo @x-plane.org
 
-  usage: ./xroads_0.48 [-v velocity] [-l] [-r] [-s] [-d] [-h]
+  usage: ./xroads [-v velocity] [-l] [-r] [-s] [-w] [-d] [-h]
 
     -v  set percentage of default car velocity
     -l  left hand driving support
     -r  hide rail tracks
     -s  hide street lights
+    -w  hide highway lights
     -d  print debug information
     -h  this help
 
+
+0.49 starting 0.49 highway lights are only removed if option "-w" has been given !!
+     adding a 2nd option "-s" removes even more local lights
 
 0.48 "-s" removes more cobra-head lamps in rural areas
 
