@@ -7,7 +7,7 @@
 # 
 */
 
-#define VERSION "0.49"
+#define VERSION "0.50"
 
 #ifdef _WIN32
   #include <windows.h>
@@ -40,18 +40,21 @@
 #define OPT_HWY_LTS      0x01
 #define OPT_LHT          0x02
 
-#define XSCENERYDIR  "./Custom Scenery"
-#define XROADSDIR    XSCENERYDIR"/Xroads"
-#define XROADS       XROADSDIR"/1000_roads"
-#define XTEXTURES    XROADS"/textures"
-#define XOBJECTS     XROADS"/objects"
-#define XROBJS       XROADSDIR"/objects"
-#define XLIB         XROADSDIR"/library.txt"
-#define XBLANKFAC    XROBJS"/blank.fac"
-#define XBLANKOBJ    XROBJS"/blank.obj"
-#define DEFROADS     "Resources/default scenery/1000 roads"
+#define XSCENERYDIR    "./Custom Scenery"
+#define XROADSDIR      XSCENERYDIR"/Xroads"
+#define XROADS         XROADSDIR"/1000_roads"
+#define XROADS_XWP     XROADSDIR"/xwp"
+#define XROADS_XWP_NET XROADSDIR"/xwp/network"
+#define XTEXTURES      XROADS"/textures"
+#define XOBJECTS       XROADS"/objects"
+#define XROBJS         XROADSDIR"/objects"
+#define XLIB           XROADSDIR"/library.txt"
+#define XBLANKFAC      XROBJS"/blank.fac"
+#define XBLANKOBJ      XROBJS"/blank.obj"
+#define DEFROADS       "Resources/default scenery/1000 roads"
+#define DEFROADS_XWP   XSCENERYDIR"/simHeaven_X-WORLD-Pro_Library/objects"
 
-char *XSCENES[100] = {
+char *XWSCENES[100] = {
   "simHeaven_X-Europe-4-scenery",
   "simHeaven_X-America-4-scenery",
   "simHeaven_X-Europe-6-scenery",
@@ -61,11 +64,18 @@ char *XSCENES[100] = {
   NULL
 };
 
+char *XWPSCENES[100] = {
+  "simHeaven_X-WORLD-Pro_Library",
+  NULL
+};
+
 int  debug           = 0;
 int  flags           = 0;
-int  hasXE           = 0;
+int  hasXW           = 0;    // X-World found
+int  hasXWP          = 0;    // W-World-Pro found
 int  carSpeed        = defSpeed;
 int  lhDriving       = 0;
+int  noPeople        = 0;
 int  noRails         = 0;
 int  noLights        = 0;
 int  noHwyLights     = 0;
@@ -343,7 +353,9 @@ int genLibrary() {
       }
       fclose(opt);
     }
-    fputs("\nREGION_DEFINE Xroads\n",fp);
+    fputs("\nREGION_DEFINE Xroads_all\nREGION_ALL\n\n",fp);
+
+    fputs("REGION_DEFINE Xroads\n",fp);
 
     d = opendir(XSCENERYDIR);
     if (d) {
@@ -443,15 +455,44 @@ int genLibrary() {
       fclose(opt);
     }
 
-    /* add net file re-routes */
-    fputs("\nREGION Xroads\nEXPORT_EXCLUDE lib/g10/roads.net 1000_roads/roads.net\nEXPORT_EXCLUDE lib/g10/roads_EU.net 1000_roads/roads_EU.net\n",fp);
+
 
     /* add object re-routes */
-    if ( hasXE ) {
-      fputs("EXPORT_EXCLUDE simheaven/ground/parking_cars.fac   objects/Parking_Cars.fac\nEXPORT_EXCLUDE simheaven/ground/parking_trucks.fac  objects/Parking_Trucks.fac\n",fp);
+    if ( hasXWP ) {
+      // fputs("\nREGION Xroads_left\n\n",fp);
+
+      // fputs("EXPORT_EXCLUDE XWP_roads_Africa.net     xwp/XWP_roads_Europe_left.net\n",fp);
+      // fputs("EXPORT_EXCLUDE XWP_roads_America.net    xwp/XWP_roads_Europe_left.net\n",fp);
+      // fputs("EXPORT_EXCLUDE XWP_roads_Antarctica.net xwp/XWP_roads_Europe_left.net\n",fp);
+      // fputs("EXPORT_EXCLUDE XWP_roads_Asia.net       xwp/XWP_roads_Europe_left.net\n",fp);
+      // fputs("EXPORT_EXCLUDE XWP_roads_Australia.net  xwp/XWP_roads_Europe_left.net\n",fp);
+      // fputs("EXPORT_EXCLUDE XWP_roads_Europe.net     xwp/XWP_roads_Europe_left.net\n",fp);
+
+      fputs("\nREGION Xroads\n\n",fp);
+
+      fputs("EXPORT_EXCLUDE XWP_roads_Africa.net     xwp/XWP_roads_Europe_right.net\n",fp);
+      fputs("EXPORT_EXCLUDE XWP_roads_America.net    xwp/XWP_roads_Europe_right.net\n",fp);
+      fputs("EXPORT_EXCLUDE XWP_roads_Antarctica.net xwp/XWP_roads_Europe_right.net\n",fp);
+      fputs("EXPORT_EXCLUDE XWP_roads_Asia.net       xwp/XWP_roads_Europe_right.net\n",fp);
+      fputs("EXPORT_EXCLUDE XWP_roads_Australia.net  xwp/XWP_roads_Europe_right.net\n",fp);
+      fputs("EXPORT_EXCLUDE XWP_roads_Europe.net     xwp/XWP_roads_Europe_right.net\n\n",fp);
+
+      fputs("EXPORT_EXCLUDE lib/g10/roads.net        xwp/XWP_roads_right.net\n",fp);
+      fputs("EXPORT_EXCLUDE lib/g10/roads_EU.net     xwp/XWP_roads_EU_right.net\n\n",fp);
+
     } else {
-      fputs("EXPORT_EXCLUDE simheaven/ground/parking_cars.fac   objects/blank.fac\nEXPORT_EXCLUDE simheaven/ground/parking_trucks.fac  objects/blank.fac\n",fp);
+
+      fputs("\nREGION Xroads\n\n",fp);
+      
+      fputs("EXPORT_EXCLUDE lib/g10/roads.net 1000_roads/roads.net\nEXPORT_EXCLUDE lib/g10/roads_EU.net 1000_roads/roads_EU.net\n",fp);
+      if ( hasXW ) {
+        fputs("EXPORT_EXCLUDE simheaven/ground/parking_cars.fac   objects/Parking_Cars.fac\nEXPORT_EXCLUDE simheaven/ground/parking_trucks.fac  objects/Parking_Trucks.fac\n",fp);
+      } else {
+        fputs("EXPORT_EXCLUDE simheaven/ground/parking_cars.fac   objects/blank.fac\nEXPORT_EXCLUDE simheaven/ground/parking_trucks.fac  objects/blank.fac\n",fp);
+      }
     }
+
+    fputs("\nREGION Xroads_all\n\n",fp);
 
     /* add optional lines to the end of the library */
     if ( (opt = fopen("xroads.opt","r")) ) {
@@ -485,11 +526,18 @@ int genNetFile(char *s_in,char *s_out, int opts) {
   int lht = 0;
   int local = 0;     // local roads
   int rurds = 0;     // rural roads
+  int junc = 0;      // junction
   int skipNext = 0;
+  int skipQuad = 0;
   
 
-  sprintf(infile,"%s/%s",DEFROADS,s_in);
-  sprintf(outfile,"%s/%s",XROADS,s_out);
+  if ( hasXWP ) {
+    sprintf(infile,"%s/%s",DEFROADS_XWP,s_in);
+    sprintf(outfile,"%s/%s",XROADS_XWP,s_out);
+  } else {
+    sprintf(infile,"%s/%s",DEFROADS,s_in);
+    sprintf(outfile,"%s/%s",XROADS,s_out);
+  }
   if ( (in = fopen(infile,"r")) ) {
     if ( (out = fopen(outfile,"w")) ) {
       printf("creating %s\n",s_out);
@@ -497,30 +545,34 @@ int genNetFile(char *s_in,char *s_out, int opts) {
         noHwyLights = 0;
       while ( fgets(buf, MAX_TXT, in) ) {
         strip(buf);
-        if ( strstr(buf,"# Group: ") ) {
+        if ( strstr(buf,"# Group: ") || strstr(buf,"# ") ) {
           hwy = 0;
           rail = 0;
           lht = 0;
           rurds = 0;
           local = 0;
+          junc = 0;
           is_5001 = 0;
           if ( strstr(buf,"GRPHwyBYTs") || strstr(buf,"GRP_HIGHWAYS") ) {
             hwy = 1;
-          } else if ( ! noRails && (strstr(buf,"GRP_RAIL") || strstr(buf,"GRP_rail")) ) {
+          } else if ( ! noRails && (strstr(buf,"GRP_RAIL") || strstr(buf,"GRP_rail") || strstr(buf,"# rail")) ) {
             rail = 1;
-          } else if ( strstr(buf,"GRPLocal") ) {
+          } else if ( strstr(buf,"GRPLocal") || strstr(buf,"local") ) {
             if ( ! strstr(buf,"OneW") ) 
               lht = 1;
             local = 1;                      
-          } else if ( strstr(buf,"GRPPrimary") )  {
+          } else if ( strstr(buf,"GRPPrimary") || strstr(buf,"primary") )  {
             if ( ! strstr(buf,"OneW") ) 
               lht = 1;
             rurds = 1;
-          } else if ( strstr(buf,"GRPSecondary") )  {
+          } else if ( strstr(buf,"GRPSecondary") || strstr(buf,"secondary") ) {
             if ( ! strstr(buf,"OneW") ) 
               lht = 1;
             rurds = 1;
-          } else if ( strstr(buf,"GRP_basic_plugs") )  {
+          //} else if ( strstr(buf,"Junction ") && (strstr(buf,"PLG_Pri") || strstr(buf,"PLG_Sec") || strstr(buf,"PLG_Cmp")|| strstr(buf,"PLG_App")) ) {
+          } else if ( strstr(buf,"Junction ") && (strstr(buf,"PLG_")) ) {
+            junc = 1;
+          } else if ( strstr(buf,"GRP_basic_plugs") || strstr(buf,"rural") || strstr(buf,"residential/") ) {
             if ( ! strstr(buf,"OneW") ) 
               lht = 1;
             rurds = 1;
@@ -530,19 +582,27 @@ int genNetFile(char *s_in,char *s_out, int opts) {
             is_5001 = 1;
           else
             is_5001 = 0;
-        } else if ( ! hwy && ! rail && ( strstr(buf,"QUAD ") || strstr(buf,"TRI ") ) ) {
+        } else if ( strstr(buf,"MATCH") ) {
+          if ( strstr(buf,"205") || strstr(buf,"184") || strstr(buf,"195") )
+            skipQuad = 1;
+        } else if ( strstr(buf,"# ") ) {
+            skipQuad = 0;
+        } else if ( ! hwy && ! rail && (! skipQuad || junc )&& (strstr(buf,"QUAD ")||strstr(buf,"TRI ") ) ) {
           shift(buf);
           buf[0] = '#';
         } else if ( noLights && (rurds || is_5001) && strstr(buf,"streetlights") ) {     // hide street lights
           shift(buf); 
           buf[0] = '#';
-        } else if ( noLights && local && strstr(buf,"ResLt3") ) {     // hide street lights
+        } else if ( noPeople&&(strstr(buf,"people.obj")||strstr(buf,"biker.obj")||strstr(buf,"waste")) ) { // hide people
           shift(buf); 
           buf[0] = '#';
-        } else if ( noLights > 1 && local && strstr(buf,"ResLt2")  ) {     // hide street lights
+        } else if ( noLights && local && (strstr(buf,"ResLt3")||strstr(buf,"ResidentialLight_03")) ) {     // hide street lights
           shift(buf); 
           buf[0] = '#';
-        } else if ( ! rail && strstr(buf,"SEGMENT_DRAPED ") ) {
+        } else if ( noLights > 1 && local && (strstr(buf,"ResLt2")||strstr(buf,"ResidentialLight_0")) ) {     // hide street lights
+          shift(buf); 
+          buf[0] = '#';
+        } else if ( ! rail && strstr(buf,"SEGMENT_DRAPED ")  ) {
           shift(buf); 
           buf[0] = '#';
         } else if ( strstr(buf,"CAR_DRAPED") || strstr(buf,"CAR_GRADED") ) {
@@ -553,7 +613,7 @@ int genNetFile(char *s_in,char *s_out, int opts) {
             ch = strtok(NULL, " \t");
           }
           if ( n > 3 ) {
-            if ( lht && (opts&OPT_LHT) ) {
+            if ( (lht || hasXWP) && (opts&OPT_LHT) ) {
               if ( words[1][0] == '0' )  // swap RH/LH driving
                 words[1][0] = '1';
               else
@@ -567,7 +627,7 @@ int genNetFile(char *s_in,char *s_out, int opts) {
         } else if ( strstr(buf,"autogen_tree") ) {   /* ignore trees on roads */
           shift(buf);
           buf[0] = '#';
-        } else if ( noHwyLights && (strstr(buf,"HwyLt") || strstr(buf,"RmpLt")) ) {
+        } else if ( noHwyLights && (strstr(buf,"HwyLt") || strstr(buf,"RmpLt") || strstr(buf,"HighwayLight") || strstr(buf,"HighwayRampLight")) ) {
           shift(buf);
           buf[0] = '#';
           skipNext = 1;
@@ -647,23 +707,27 @@ int main(int argc, char **argv) {
       n = atoi(argv[i]);
       if ( n >= 50 && n <= 100 ) {
         carSpeed = n;
-		printf("setting car velocity to %d%%\n",carSpeed);
+        printf("setting car velocity to %d%%\n",carSpeed);
       } else {
         printf("invalid velocity %d%%\n",n);
       }
-	} else  if ( ! strcmp(argv[i],"-l") ) {
+    } else  if ( ! strcmp(argv[i],"-l") ) {
       /* set left hand driving support */
       lhDriving = 1;
-	  printf("left-hand-driving enabled\n");
-	} else  if ( ! strcmp(argv[i],"-r") ) {
+      printf("left-hand-driving enabled\n");
+    } else  if ( ! strcmp(argv[i],"-r") ) {
       /* hide rail tracks */
       noRails = 1;
-	  printf("hiding rail tracks\n");
-	} else  if ( ! strcmp(argv[i],"-w") ) {
+      printf("hiding rail tracks\n");
+    } else  if ( ! strcmp(argv[i],"-p") ) {
+      /* hide people, biker and bins */
+      noPeople = 1;
+      printf("hiding people, biker and bins\n");
+    } else  if ( ! strcmp(argv[i],"-w") ) {
       /* hide highways lights */
       noHwyLights = 1;
-	  printf("hiding highways lights\n");
-	} else  if ( ! strcmp(argv[i],"-s") ) {
+      printf("hiding highways lights\n");
+    } else  if ( ! strcmp(argv[i],"-s") ) {
       /* hide street lights */
       noLights = noLights + 1;
       if ( noLights > 1 ) {
@@ -671,15 +735,16 @@ int main(int argc, char **argv) {
       } else {
 	     printf("hiding street lights\n");
       }
-	} else  if ( ! strcmp(argv[i],"-d") ) {
+    } else  if ( ! strcmp(argv[i],"-d") ) {
       /* print debug info */
       debug = 1;
-	  printf("printing debug information\n");
+      printf("printing debug information\n");
     } else if ( ! strcmp(argv[i],"-h") ) {
       /* show help */
-      printf("\n  usage: %s [-v velocity] [-l] [-r] [-s] [-w] [-d] [-h]\n\n",argv[0]);
+      printf("\n  usage: %s [-v velocity] [-l] [-p] [-r] [-s] [-w] [-d] [-h]\n\n",argv[0]);
       printf("    -v  set percentage of default car velocity\n"
              "    -l  left hand driving support\n"
+             "    -p  hide people, bikes and bins\n"
              "    -r  hide rail tracks\n"
              "    -s  hide street lights\n"
              "    -w  hide highway lights\n"
@@ -699,6 +764,43 @@ int main(int argc, char **argv) {
   chdir(tmp);
 
 #endif
+
+/*-----------------------------------------------------------------*/
+
+ // identify installed SimHeaven scenery packs
+
+  for ( i=0 ; XWPSCENES[i] != NULL ; i++ ) {          // testing for X-World PR
+    sprintf(XTEST,"%s/%s",XSCENERYDIR,XWPSCENES[i]);
+    if ( isDir(XTEST) ) {
+      strcpy(XSCENE,XWPSCENES[i]);
+    }
+  }
+  if ( strlen(XSCENE) > 0 ) {
+    hasXWP = 1;
+    printf("X-World Pro found: %s\n",XSCENE);
+    //printf("setting up %s parking\n",XSCENE);
+    //genFacFile("Parking_Cars.fac");
+    //genFacFile("Parking_Trucks.fac"); 
+  } else {
+    for ( i=0 ; XWSCENES[i] != NULL ; i++ ) {          // testing for X-World
+      sprintf(XTEST,"%s/%s",XSCENERYDIR,XWSCENES[i]);
+      if ( isDir(XTEST) ) {
+       strcpy(XSCENE,XWSCENES[i]);
+      }
+    }
+    if ( strlen(XSCENE) > 0 ) {      
+      hasXW = 1;
+      printf("X-World found: %s\n",XSCENE);
+      printf("setting up %s parking\n",XSCENE);
+      genFacFile("Parking_Cars.fac");
+      genFacFile("Parking_Trucks.fac");
+    } else {
+      printf("info: no supported SimHeaven scenery found\n");
+    }
+  }
+
+  
+/*-----------------------------------------------------------------*/
 
   if ( ! isDir(XROADSDIR) ) {
     if ( mkdir(XROADSDIR,0755) ) {
@@ -745,15 +847,34 @@ int main(int argc, char **argv) {
   } else {
     printf("%s exists\n",XOBJECTS);
   }
-
-  genNetFile("roads.net",   "roads.net",flags);
-  genNetFile("roads_EU.net","roads_EU.net",flags);
-  genNetFile("roads_EU.net","roads_EU_HWL.net",flags|OPT_HWY_LTS);
-  if ( lhDriving ) {
-    genNetFile("roads.net",   "roads_LH.net",flags|OPT_LHT);
-    genNetFile("roads_EU.net","roads_UK.net",flags|OPT_LHT);
-  }
-
+  
+  if ( hasXWP ) {
+     
+    if ( ! isDir(XROADS_XWP) ) {
+      if ( mkdir(XROADS_XWP,0755) ) {
+        printf("ERROR: cannot create %s\n",XROADS_XWP);
+        return(-1);
+      } else {
+        printf("%s created\n",XROADS_XWP);
+      }
+    } else {
+      printf("%s exists\n",XROADS_XWP);
+    }
+  
+  
+    if ( ! isDir(XROADS_XWP_NET"/textures") ) {
+#ifdef _WIN32
+      sprintf(tmp,"mklink /j \"%s\" \""DEFROADS_XWP"/network\"",XROADS_XWP_NET);
+      //printf("%s\n",tmp);
+      system(tmp);
+#else
+      symlink("../../../"DEFROADS_XWP"/network",XROADS_XWP_NET);
+#endif
+    } else {
+      printf("%s exists\n",XROADS_XWP_NET);
+    }  
+  }   
+  
   if ( ! isDir(XROBJS) ) {
     if ( mkdir(XROBJS,0755) ) {
       printf("ERROR: cannot create %s\n",XROBJS);
@@ -765,27 +886,27 @@ int main(int argc, char **argv) {
     printf("%s exists\n",XROBJS);
   }
 
+  if ( hasXWP ) {
+    printf("DOING WXP !!!\n");
+    genNetFile("XWP_roads_Europe_right.net",  "XWP_roads_Europe_left.net",flags|OPT_LHT);
+    genNetFile("XWP_roads_Europe_right.net",  "XWP_roads_Europe_right.net",flags);
+    genNetFile("XWP_roads_left.net",          "XWP_roads_left.net",flags);
+    genNetFile("XWP_roads_right.net",         "XWP_roads_right.net",flags);
+    genNetFile("XWP_roads_EU_left.net",       "XWP_roads_EU_left.net",flags);
+    genNetFile("XWP_roads_EU_right.net",      "XWP_roads_EU_right.net",flags);
+  } else {
+    genNetFile("roads.net",   "roads.net",flags);
+    genNetFile("roads_EU.net","roads_EU.net",flags);
+    genNetFile("roads_EU.net","roads_EU_HWL.net",flags|OPT_HWY_LTS);
+    if ( lhDriving ) {
+      genNetFile("roads.net",   "roads_LH.net",flags|OPT_LHT);
+      genNetFile("roads_EU.net","roads_UK.net",flags|OPT_LHT);
+    }
+  }
+
   genBlankFac();
   genBlankObj();
 
-
-  // identify installed SimHeaven scenery packs
-
-  for ( i=0 ; XSCENES[i] != NULL ; i++ ) {
-    sprintf(XTEST,"%s/%s",XSCENERYDIR,XSCENES[i]);
-    if ( isDir(XTEST) ) {
-     strcpy(XSCENE,XSCENES[i]);
-  }
- 
-  }
-  if ( strlen(XSCENE) > 0 ) {
-    hasXE = 1;
-    printf("setting up %s parking\n",XSCENE);
-    genFacFile("Parking_Cars.fac");
-    genFacFile("Parking_Trucks.fac");
-  } else {
-    printf("info: no supported SimHeaven scenery found\n");
-  }
 
   genLibrary();
 

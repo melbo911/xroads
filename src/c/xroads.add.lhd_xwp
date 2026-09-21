@@ -1,0 +1,47 @@
+# LEFT HAND DRIVING SUPPORT FOR X-WORLD PRO
+
+# xroads.add start
+
+REGION_DEFINE Xroads_left
+# add left-hand-driving tiles below this line
+REGION_RECT -004 +51 -004 +51
+REGION_RECT -008 +51 -008 +51
+REGION_RECT -009 +51 -009 +51
+REGION_RECT -010 +51 -010 +51
+REGION_RECT -011 +51 -011 +51
+REGION_RECT -007 +52 -007 +52
+REGION_RECT -008 +52 -008 +52
+REGION_RECT -009 +52 -009 +52
+REGION_RECT -010 +52 -010 +52
+REGION_RECT -011 +52 -011 +52
+REGION_RECT -007 +53 -007 +53
+REGION_RECT -008 +53 -008 +53
+REGION_RECT -009 +53 -009 +53
+REGION_RECT -010 +53 -010 +53
+REGION_RECT -011 +53 -011 +53
+REGION_RECT -006 +54 -006 +54
+REGION_RECT -007 +54 -007 +54
+REGION_RECT -008 +54 -008 +54
+REGION_RECT -009 +54 -009 +54
+REGION_RECT -010 +54 -010 +54
+REGION_RECT -011 +54 -011 +54
+REGION_RECT -007 +55 -007 +55
+REGION_RECT -008 +55 -008 +55
+REGION_RECT -009 +55 -009 +55
+
+
+
+REGION Xroads_left
+
+PORT_EXCLUDE XWP_roads_Africa.net     xwp/XWP_roads_Europe_left.net
+PORT_EXCLUDE XWP_roads_America.net    xwp/XWP_roads_Europe_left.net
+PORT_EXCLUDE XWP_roads_Antarctica.net xwp/XWP_roads_Europe_left.net
+PORT_EXCLUDE XWP_roads_Asia.net       xwp/XWP_roads_Europe_left.net
+PORT_EXCLUDE XWP_roads_Australia.net  xwp/XWP_roads_Europe_left.net
+PORT_EXCLUDE XWP_roads_Europe.net     xwp/XWP_roads_Europe_left.net
+
+EXPORT_EXCLUDE lib/g10/roads.net      xwp/XWP_roads_left.net
+EXPORT_EXCLUDE lib/g10/roads_EU.net   xwp/XWP_roads_EU_left.net
+
+# xroads.add end
+
