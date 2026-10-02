@@ -1,17 +1,29 @@
 
 % ./xroads -h
-Xroads - 0.50 - melbo @x-plane.org
+Xroads - 0.51 - melbo @x-plane.org
 
-  usage: ./xroads [-v velocity] [-l] [-r] [-s] [-w] [-d] [-h]
+  usage: ./xroads.app [-v velocity] [-p] [-r] [-s] [-w] [-d] [-h]
 
     -v  set percentage of default car velocity
-    -l  left hand driving support
+    -p  hide people, bikes and bins
     -r  hide rail tracks
     -s  hide street lights
     -w  hide highway lights
     -d  print debug information
     -h  this help
 
+
+
+
+0.51
+
+   support for X-World Pro 1.1
+
+   left hand driving support now always enabled
+          add LHD tile coordinates to file "xroads.left" and run xroads
+
+
+-------------------------------------
 
 0.50 added support for X-World Pro
 

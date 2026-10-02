@@ -7,7 +7,7 @@
 # 
 */
 
-#define VERSION "0.50"
+#define VERSION "0.51"
 
 #ifdef _WIN32
   #include <windows.h>
@@ -74,7 +74,6 @@ int  flags           = 0;
 int  hasXW           = 0;    // X-World found
 int  hasXWP          = 0;    // W-World-Pro found
 int  carSpeed        = defSpeed;
-int  lhDriving       = 0;
 int  noPeople        = 0;
 int  noRails         = 0;
 int  noLights        = 0;
@@ -459,32 +458,53 @@ int genLibrary() {
 
     /* add object re-routes */
     if ( hasXWP ) {
-      // fputs("\nREGION Xroads_left\n\n",fp);
 
-      // fputs("EXPORT_EXCLUDE XWP_roads_Africa.net     xwp/XWP_roads_Europe_left.net\n",fp);
-      // fputs("EXPORT_EXCLUDE XWP_roads_America.net    xwp/XWP_roads_Europe_left.net\n",fp);
-      // fputs("EXPORT_EXCLUDE XWP_roads_Antarctica.net xwp/XWP_roads_Europe_left.net\n",fp);
-      // fputs("EXPORT_EXCLUDE XWP_roads_Asia.net       xwp/XWP_roads_Europe_left.net\n",fp);
-      // fputs("EXPORT_EXCLUDE XWP_roads_Australia.net  xwp/XWP_roads_Europe_left.net\n",fp);
-      // fputs("EXPORT_EXCLUDE XWP_roads_Europe.net     xwp/XWP_roads_Europe_left.net\n",fp);
 
       fputs("\nREGION Xroads\n\n",fp);
 
-      fputs("EXPORT_EXCLUDE XWP_roads_Africa.net     xwp/XWP_roads_Europe_right.net\n",fp);
-      fputs("EXPORT_EXCLUDE XWP_roads_America.net    xwp/XWP_roads_Europe_right.net\n",fp);
-      fputs("EXPORT_EXCLUDE XWP_roads_Antarctica.net xwp/XWP_roads_Europe_right.net\n",fp);
-      fputs("EXPORT_EXCLUDE XWP_roads_Asia.net       xwp/XWP_roads_Europe_right.net\n",fp);
-      fputs("EXPORT_EXCLUDE XWP_roads_Australia.net  xwp/XWP_roads_Europe_right.net\n",fp);
-      fputs("EXPORT_EXCLUDE XWP_roads_Europe.net     xwp/XWP_roads_Europe_right.net\n\n",fp);
-
       fputs("EXPORT_EXCLUDE lib/g10/roads.net        xwp/XWP_roads_right.net\n",fp);
       fputs("EXPORT_EXCLUDE lib/g10/roads_EU.net     xwp/XWP_roads_EU_right.net\n\n",fp);
+      
+      fputs("\nREGION_DEFINE Xroads_left\n",fp);
+      fputs("# add left-hand-driving tiles below this line\n",fp);
+      
+      /*  add optional "left hand driving" tile coordinates to library */
+      if ( (opt = fopen("xroads.left","r")) ) {
+         printf("appending xroads.left\n");
+         while ( fgets(buf, MAX_TXT, opt) != NULL ) {
+           fputs(buf,fp);
+         }
+         fclose(opt);
+      }
+    
+      fputs("\nREGION Xroads_left\n",fp);
+      fputs("\nEXPORT_EXCLUDE lib/g10/roads.net    xwp/XWP_roads_left.net\n",fp);
+      fputs("EXPORT_EXCLUDE lib/g10/roads_EU.net   xwp/XWP_roads_EU_left.net\n",fp);
+
 
     } else {
 
       fputs("\nREGION Xroads\n\n",fp);
       
-      fputs("EXPORT_EXCLUDE lib/g10/roads.net 1000_roads/roads.net\nEXPORT_EXCLUDE lib/g10/roads_EU.net 1000_roads/roads_EU.net\n",fp);
+      fputs("EXPORT_EXCLUDE lib/g10/roads.net    1000_roads/roads.net\n",fp);
+      fputs("EXPORT_EXCLUDE lib/g10/roads_EU.net 1000_roads/roads_EU.net\n",fp);
+
+      fputs("\nREGION_DEFINE Xroads_left\n",fp);
+      fputs("# add left-hand-driving tiles below this line\n",fp);
+      
+      /*  add optional "left hand driving" tile coordinates to library */
+      if ( (opt = fopen("xroads.left","r")) ) {
+         printf("appending xroads.left\n");
+         while ( fgets(buf, MAX_TXT, opt) != NULL ) {
+           fputs(buf,fp);
+         }
+         fclose(opt);
+      }
+    
+      fputs("\nREGION Xroads_left\n",fp);
+      fputs("\nEXPORT_EXCLUDE lib/g10/roads.net    1000_roads/roads_left.net\n",fp);
+      fputs("EXPORT_EXCLUDE lib/g10/roads_EU.net   1000_roads/roads_EU_left.net\n",fp);
+
       if ( hasXW ) {
         fputs("EXPORT_EXCLUDE simheaven/ground/parking_cars.fac   objects/Parking_Cars.fac\nEXPORT_EXCLUDE simheaven/ground/parking_trucks.fac  objects/Parking_Trucks.fac\n",fp);
       } else {
@@ -545,7 +565,8 @@ int genNetFile(char *s_in,char *s_out, int opts) {
         noHwyLights = 0;
       while ( fgets(buf, MAX_TXT, in) ) {
         strip(buf);
-        if ( strstr(buf,"# Group: ") || strstr(buf,"# ") ) {
+        //if ( strstr(buf,"# Group: ") || strstr(buf,"# ") ) {
+        if ( strstr(buf,"# Group: ") ) {
           hwy = 0;
           rail = 0;
           lht = 0;
@@ -570,7 +591,8 @@ int genNetFile(char *s_in,char *s_out, int opts) {
               lht = 1;
             rurds = 1;
           //} else if ( strstr(buf,"Junction ") && (strstr(buf,"PLG_Pri") || strstr(buf,"PLG_Sec") || strstr(buf,"PLG_Cmp")|| strstr(buf,"PLG_App")) ) {
-          } else if ( strstr(buf,"Junction ") && (strstr(buf,"PLG_")) ) {
+          //} else if ( strstr(buf,"Junction ") && (strstr(buf,"PLG_")) ) {
+          } else if ( strstr(buf,"Junction ") ) {
             junc = 1;
           } else if ( strstr(buf,"GRP_basic_plugs") || strstr(buf,"rural") || strstr(buf,"residential/") ) {
             if ( ! strstr(buf,"OneW") ) 
@@ -583,7 +605,7 @@ int genNetFile(char *s_in,char *s_out, int opts) {
           else
             is_5001 = 0;
         } else if ( strstr(buf,"MATCH") ) {
-          if ( strstr(buf,"205") || strstr(buf,"184") || strstr(buf,"195") )
+          if ( strstr(buf,"205") || strstr(buf,"184") || strstr(buf,"195") || strstr(buf,"111") || strstr(buf,"101") )
             skipQuad = 1;
         } else if ( strstr(buf,"# ") ) {
             skipQuad = 0;
@@ -711,10 +733,6 @@ int main(int argc, char **argv) {
       } else {
         printf("invalid velocity %d%%\n",n);
       }
-    } else  if ( ! strcmp(argv[i],"-l") ) {
-      /* set left hand driving support */
-      lhDriving = 1;
-      printf("left-hand-driving enabled\n");
     } else  if ( ! strcmp(argv[i],"-r") ) {
       /* hide rail tracks */
       noRails = 1;
@@ -741,9 +759,8 @@ int main(int argc, char **argv) {
       printf("printing debug information\n");
     } else if ( ! strcmp(argv[i],"-h") ) {
       /* show help */
-      printf("\n  usage: %s [-v velocity] [-l] [-p] [-r] [-s] [-w] [-d] [-h]\n\n",argv[0]);
+      printf("\n  usage: %s [-v velocity] [-p] [-r] [-s] [-w] [-d] [-h]\n\n",argv[0]);
       printf("    -v  set percentage of default car velocity\n"
-             "    -l  left hand driving support\n"
              "    -p  hide people, bikes and bins\n"
              "    -r  hide rail tracks\n"
              "    -s  hide street lights\n"
@@ -888,20 +905,19 @@ int main(int argc, char **argv) {
 
   if ( hasXWP ) {
     printf("DOING WXP !!!\n");
-    genNetFile("XWP_roads_Europe_right.net",  "XWP_roads_Europe_left.net",flags|OPT_LHT);
-    genNetFile("XWP_roads_Europe_right.net",  "XWP_roads_Europe_right.net",flags);
-    genNetFile("XWP_roads_left.net",          "XWP_roads_left.net",flags);
-    genNetFile("XWP_roads_right.net",         "XWP_roads_right.net",flags);
-    genNetFile("XWP_roads_EU_left.net",       "XWP_roads_EU_left.net",flags);
-    genNetFile("XWP_roads_EU_right.net",      "XWP_roads_EU_right.net",flags);
+    //genNetFile("XWP_3-roads_Europe_right.net",  "XWP_roads_Europe_left.net",flags|OPT_LHT);
+    //genNetFile("XWP_3-roads_Europe_right.net",  "XWP_roads_Europe_right.net",flags);
+    genNetFile("XWP_3-roads_left.net",          "XWP_roads_left.net",flags);
+    genNetFile("XWP_3-roads_right.net",         "XWP_roads_right.net",flags);
+    genNetFile("XWP_3-roads_EU_left.net",       "XWP_roads_EU_left.net",flags);
+    genNetFile("XWP_3-roads_EU_right.net",      "XWP_roads_EU_right.net",flags);
   } else {
     genNetFile("roads.net",   "roads.net",flags);
+    genNetFile("roads.net",   "roads_left.net",flags|OPT_LHT);
+
     genNetFile("roads_EU.net","roads_EU.net",flags);
-    genNetFile("roads_EU.net","roads_EU_HWL.net",flags|OPT_HWY_LTS);
-    if ( lhDriving ) {
-      genNetFile("roads.net",   "roads_LH.net",flags|OPT_LHT);
-      genNetFile("roads_EU.net","roads_UK.net",flags|OPT_LHT);
-    }
+    genNetFile("roads_EU.net","roads_EU_left.net",flags|OPT_LHT);
+
   }
 
   genBlankFac();

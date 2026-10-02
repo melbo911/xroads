@@ -14,9 +14,6 @@ rem xroads.exe > xroads.log
 rem reduce car velocity to 80%
 rem xroads.exe -v 80
 
-rem enable left-hand-driving support 
-rem xroads.exe -l
-
 rem hide rail tracks
 rem xroads.exe -r
 
