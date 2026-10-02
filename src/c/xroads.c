@@ -489,6 +489,12 @@ int genLibrary() {
       fputs("EXPORT_EXCLUDE lib/g10/roads.net    1000_roads/roads.net\n",fp);
       fputs("EXPORT_EXCLUDE lib/g10/roads_EU.net 1000_roads/roads_EU.net\n",fp);
 
+      if ( hasXW ) {
+        fputs("EXPORT_EXCLUDE simheaven/ground/parking_cars.fac   objects/Parking_Cars.fac\nEXPORT_EXCLUDE simheaven/ground/parking_trucks.fac  objects/Parking_Trucks.fac\n",fp);
+      } else {
+        fputs("EXPORT_EXCLUDE simheaven/ground/parking_cars.fac   objects/blank.fac\nEXPORT_EXCLUDE simheaven/ground/parking_trucks.fac  objects/blank.fac\n",fp);
+      }
+
       fputs("\nREGION_DEFINE Xroads_left\n",fp);
       fputs("# add left-hand-driving tiles below this line\n",fp);
       
@@ -505,11 +511,6 @@ int genLibrary() {
       fputs("\nEXPORT_EXCLUDE lib/g10/roads.net    1000_roads/roads_left.net\n",fp);
       fputs("EXPORT_EXCLUDE lib/g10/roads_EU.net   1000_roads/roads_EU_left.net\n",fp);
 
-      if ( hasXW ) {
-        fputs("EXPORT_EXCLUDE simheaven/ground/parking_cars.fac   objects/Parking_Cars.fac\nEXPORT_EXCLUDE simheaven/ground/parking_trucks.fac  objects/Parking_Trucks.fac\n",fp);
-      } else {
-        fputs("EXPORT_EXCLUDE simheaven/ground/parking_cars.fac   objects/blank.fac\nEXPORT_EXCLUDE simheaven/ground/parking_trucks.fac  objects/blank.fac\n",fp);
-      }
     }
 
     fputs("\nREGION Xroads_all\n\n",fp);
