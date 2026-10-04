@@ -7,7 +7,7 @@
 # 
 */
 
-#define VERSION "0.51"
+#define VERSION "0.52"
 
 #ifdef _WIN32
   #include <windows.h>
@@ -78,6 +78,7 @@ int  noPeople        = 0;
 int  noRails         = 0;
 int  noLights        = 0;
 int  noHwyLights     = 0;
+int  useXpRoads      = 0;
 int  is_5001         = 0;
 char XSCENE[MAX_TXT] = "";
 char XTEST[MAX_TXT]  = "";
@@ -457,7 +458,7 @@ int genLibrary() {
 
 
     /* add object re-routes */
-    if ( hasXWP ) {
+    if ( hasXWP && ! useXpRoads) {
 
 
       fputs("\nREGION Xroads\n\n",fp);
@@ -552,7 +553,7 @@ int genNetFile(char *s_in,char *s_out, int opts) {
   int skipQuad = 0;
   
 
-  if ( hasXWP ) {
+  if ( hasXWP && ! useXpRoads ) {
     sprintf(infile,"%s/%s",DEFROADS_XWP,s_in);
     sprintf(outfile,"%s/%s",XROADS_XWP,s_out);
   } else {
@@ -746,6 +747,10 @@ int main(int argc, char **argv) {
       /* hide highways lights */
       noHwyLights = 1;
       printf("hiding highways lights\n");
+    } else  if ( ! strcmp(argv[i],"-x") ) {
+      /* force to use X-Planes road network */
+      useXpRoads = 1;
+      printf("using X-Planes road network\n");
     } else  if ( ! strcmp(argv[i],"-s") ) {
       /* hide street lights */
       noLights = noLights + 1;
@@ -760,12 +765,13 @@ int main(int argc, char **argv) {
       printf("printing debug information\n");
     } else if ( ! strcmp(argv[i],"-h") ) {
       /* show help */
-      printf("\n  usage: %s [-v velocity] [-p] [-r] [-s] [-w] [-d] [-h]\n\n",argv[0]);
+      printf("\n  usage: %s [-v velocity] [-p] [-r] [-s] [-w] [-d] [-h] [-x]\n\n",argv[0]);
       printf("    -v  set percentage of default car velocity\n"
              "    -p  hide people, bikes and bins\n"
              "    -r  hide rail tracks\n"
              "    -s  hide street lights\n"
              "    -w  hide highway lights\n"
+             "    -x  use X-Planes road network\n"
              "    -d  print debug information\n"
              "    -h  this help\n\n");
       return(0);
@@ -866,7 +872,7 @@ int main(int argc, char **argv) {
     printf("%s exists\n",XOBJECTS);
   }
   
-  if ( hasXWP ) {
+  if ( hasXWP && ! useXpRoads ) {
      
     if ( ! isDir(XROADS_XWP) ) {
       if ( mkdir(XROADS_XWP,0755) ) {
@@ -904,10 +910,8 @@ int main(int argc, char **argv) {
     printf("%s exists\n",XROBJS);
   }
 
-  if ( hasXWP ) {
+  if ( hasXWP && ! useXpRoads) {
     printf("DOING WXP !!!\n");
-    //genNetFile("XWP_3-roads_Europe_right.net",  "XWP_roads_Europe_left.net",flags|OPT_LHT);
-    //genNetFile("XWP_3-roads_Europe_right.net",  "XWP_roads_Europe_right.net",flags);
     genNetFile("XWP_3-roads_left.net",          "XWP_roads_left.net",flags);
     genNetFile("XWP_3-roads_right.net",         "XWP_roads_right.net",flags);
     genNetFile("XWP_3-roads_EU_left.net",       "XWP_roads_EU_left.net",flags);
@@ -923,7 +927,6 @@ int main(int argc, char **argv) {
 
   genBlankFac();
   genBlankObj();
-
 
   genLibrary();
 
