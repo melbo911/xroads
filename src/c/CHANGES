@@ -1,31 +1,32 @@
 
 % ./xroads -h
-Xroads - 0.51 - melbo @x-plane.org
+Xroads - 0.53 - melbo @x-plane.org
 
-  usage: ./xroads.app [-v velocity] [-p] [-r] [-s] [-w] [-d] [-h]
+  usage: ./xroads.app [-v velocity] [-b] [-p] [-r] [-s] [-w] [-d] [-h] [-x]
 
     -v  set percentage of default car velocity
-    -p  hide people, bikes and bins
+    -b  hide bikes, bins and people
+    -p  hide power lines
     -r  hide rail tracks
     -s  hide street lights
     -w  hide highway lights
+    -x  use X-Planes road network
     -d  print debug information
     -h  this help
 
 
+0.53 new command line option "-p" to hide power lines (not needed with WXP)
 
+0.52 new command line option "-x" to force Xroads to build .net files from 
+     X-Plane's default road network even X-World-Pro has been installed
 
-0.51
+0.51 support for X-World Pro 1.1
 
-   support for X-World Pro 1.1
-
-   left hand driving support now always enabled
+     left hand driving support now always enabled
           add LHD tile coordinates to file "xroads.left" and run xroads
 
-
--------------------------------------
-
-0.50 added support for X-World Pro
+0.50 added support for X-World Pro 1.0
+     added commandline option "-b" to hide bikes, bins and people
 
 0.49 starting 0.49 highway lights are only removed if option "-w" has been given !!
      adding a 2nd option "-s" removes even more local lights

@@ -7,7 +7,7 @@
 # 
 */
 
-#define VERSION "0.52"
+#define VERSION "0.53"
 
 #ifdef _WIN32
   #include <windows.h>
@@ -74,7 +74,8 @@ int  flags           = 0;
 int  hasXW           = 0;    // X-World found
 int  hasXWP          = 0;    // W-World-Pro found
 int  carSpeed        = defSpeed;
-int  noPeople        = 0;
+int  noBikes        = 0;
+int  noPower         = 0;
 int  noRails         = 0;
 int  noLights        = 0;
 int  noHwyLights     = 0;
@@ -543,12 +544,13 @@ int genNetFile(char *s_in,char *s_out, int opts) {
   char *ch;
   unsigned int speed = 0;
   unsigned int n = 0;
-  int rail = 0;
-  int hwy = 0;
-  int lht = 0;
-  int local = 0;     // local roads
-  int rurds = 0;     // rural roads
-  int junc = 0;      // junction
+  int is_rail = 0;
+  int is_power = 0;
+  int is_hwy = 0;
+  int is_lht = 0;
+  int is_local = 0;     // local roads
+  int is_rurds = 0;     // rural roads
+  int is_junc = 0;      // junction
   int skipNext = 0;
   int skipQuad = 0;
   
@@ -569,38 +571,41 @@ int genNetFile(char *s_in,char *s_out, int opts) {
         strip(buf);
         //if ( strstr(buf,"# Group: ") || strstr(buf,"# ") ) {
         if ( strstr(buf,"# Group: ") ) {
-          hwy = 0;
-          rail = 0;
-          lht = 0;
-          rurds = 0;
-          local = 0;
-          junc = 0;
+          is_hwy = 0;
+          is_rail = 0;
+          is_power = 0;
+          is_lht = 0;
+          is_rurds = 0;
+          is_local = 0;
+          is_junc = 0;
           is_5001 = 0;
           if ( strstr(buf,"GRPHwyBYTs") || strstr(buf,"GRP_HIGHWAYS") ) {
-            hwy = 1;
+            is_hwy = 1;
           } else if ( ! noRails && (strstr(buf,"GRP_RAIL") || strstr(buf,"GRP_rail") || strstr(buf,"# rail")) ) {
-            rail = 1;
+            is_rail = 1;
           } else if ( strstr(buf,"GRPLocal") || strstr(buf,"local") ) {
             if ( ! strstr(buf,"OneW") ) 
-              lht = 1;
-            local = 1;                      
+              is_lht = 1;
+            is_local = 1;                      
           } else if ( strstr(buf,"GRPPrimary") || strstr(buf,"primary") )  {
             if ( ! strstr(buf,"OneW") ) 
-              lht = 1;
-            rurds = 1;
+              is_lht = 1;
+            is_rurds = 1;
           } else if ( strstr(buf,"GRPSecondary") || strstr(buf,"secondary") ) {
             if ( ! strstr(buf,"OneW") ) 
-              lht = 1;
-            rurds = 1;
+              is_lht = 1;
+            is_rurds = 1;
           //} else if ( strstr(buf,"Junction ") && (strstr(buf,"PLG_Pri") || strstr(buf,"PLG_Sec") || strstr(buf,"PLG_Cmp")|| strstr(buf,"PLG_App")) ) {
           //} else if ( strstr(buf,"Junction ") && (strstr(buf,"PLG_")) ) {
           } else if ( strstr(buf,"Junction ") ) {
-            junc = 1;
+            is_junc = 1;
           } else if ( strstr(buf,"GRP_basic_plugs") || strstr(buf,"rural") || strstr(buf,"residential/") ) {
             if ( ! strstr(buf,"OneW") ) 
-              lht = 1;
-            rurds = 1;
+              is_lht = 1;
+            is_rurds = 1;
           }
+        } else if ( noPower && strstr(buf,"VROAD powerlines") ) {
+          is_power = 1;
         } else if ( strstr(buf,"ROAD_TYPE") ) {
           if ( strstr(buf,"ROAD_TYPE 5001") )
             is_5001 = 1;
@@ -611,22 +616,25 @@ int genNetFile(char *s_in,char *s_out, int opts) {
             skipQuad = 1;
         } else if ( strstr(buf,"# ") ) {
             skipQuad = 0;
-        } else if ( ! hwy && ! rail && (! skipQuad || junc )&& (strstr(buf,"QUAD ")||strstr(buf,"TRI ") ) ) {
+        } else if ( ! is_hwy && ! is_rail && (! skipQuad || is_junc )&& (strstr(buf,"QUAD ")||strstr(buf,"TRI ") ) ) {
           shift(buf);
           buf[0] = '#';
-        } else if ( noLights && (rurds || is_5001) && strstr(buf,"streetlights") ) {     // hide street lights
+        } else if ( noLights && (is_rurds || is_5001) && strstr(buf,"streetlights") ) {     // hide street lights
           shift(buf); 
           buf[0] = '#';
-        } else if ( noPeople&&(strstr(buf,"people.obj")||strstr(buf,"biker.obj")||strstr(buf,"waste")) ) { // hide people
+        } else if ( noBikes && (strstr(buf,"people.obj")||strstr(buf,"biker.obj")||strstr(buf,"waste")) ) { // hide people
           shift(buf); 
           buf[0] = '#';
-        } else if ( noLights && local && (strstr(buf,"ResLt3")||strstr(buf,"ResidentialLight_03")) ) {     // hide street lights
+        } else if ( noLights && is_local && (strstr(buf,"ResLt3")||strstr(buf,"ResidentialLight_03")) ) {     // hide street lights
           shift(buf); 
           buf[0] = '#';
-        } else if ( noLights > 1 && local && (strstr(buf,"ResLt2")||strstr(buf,"ResidentialLight_0")) ) {     // hide street lights
+        } else if ( noLights > 1 && is_local && (strstr(buf,"ResLt2")||strstr(buf,"ResidentialLight_0")) ) {     // hide street lights
           shift(buf); 
           buf[0] = '#';
-        } else if ( ! rail && strstr(buf,"SEGMENT_DRAPED ")  ) {
+        } else if ( ! is_rail && strstr(buf,"SEGMENT_DRAPED ")  ) {
+          shift(buf); 
+          buf[0] = '#';
+        } else if ( noPower && is_power && strstr(buf,"ROAD_DRAPE")  ) {
           shift(buf); 
           buf[0] = '#';
         } else if ( strstr(buf,"CAR_DRAPED") || strstr(buf,"CAR_GRADED") ) {
@@ -637,7 +645,7 @@ int genNetFile(char *s_in,char *s_out, int opts) {
             ch = strtok(NULL, " \t");
           }
           if ( n > 3 ) {
-            if ( (lht || hasXWP) && (opts&OPT_LHT) ) {
+            if ( (is_lht || hasXWP) && (opts&OPT_LHT) ) {
               if ( words[1][0] == '0' )  // swap RH/LH driving
                 words[1][0] = '1';
               else
@@ -739,18 +747,18 @@ int main(int argc, char **argv) {
       /* hide rail tracks */
       noRails = 1;
       printf("hiding rail tracks\n");
+    } else  if ( ! strcmp(argv[i],"-b") ) {
+      /* hide biker, bins and people */
+      noBikes = 1;
+      printf("hiding biker, bins and people\n");
     } else  if ( ! strcmp(argv[i],"-p") ) {
-      /* hide people, biker and bins */
-      noPeople = 1;
-      printf("hiding people, biker and bins\n");
+      /* hide power lines */
+      noPower = 1;
+      printf("hiding power lines\n");
     } else  if ( ! strcmp(argv[i],"-w") ) {
       /* hide highways lights */
       noHwyLights = 1;
       printf("hiding highways lights\n");
-    } else  if ( ! strcmp(argv[i],"-x") ) {
-      /* force to use X-Planes road network */
-      useXpRoads = 1;
-      printf("using X-Planes road network\n");
     } else  if ( ! strcmp(argv[i],"-s") ) {
       /* hide street lights */
       noLights = noLights + 1;
@@ -759,15 +767,20 @@ int main(int argc, char **argv) {
       } else {
 	     printf("hiding street lights\n");
       }
+    } else  if ( ! strcmp(argv[i],"-x") ) {
+      /* force to use X-Planes road network */
+      useXpRoads = 1;
+      printf("using X-Planes road network\n");
     } else  if ( ! strcmp(argv[i],"-d") ) {
       /* print debug info */
       debug = 1;
       printf("printing debug information\n");
     } else if ( ! strcmp(argv[i],"-h") ) {
       /* show help */
-      printf("\n  usage: %s [-v velocity] [-p] [-r] [-s] [-w] [-d] [-h] [-x]\n\n",argv[0]);
+      printf("\n  usage: %s [-v velocity] [-b] [-p] [-r] [-s] [-w] [-d] [-h] [-x]\n\n",argv[0]);
       printf("    -v  set percentage of default car velocity\n"
-             "    -p  hide people, bikes and bins\n"
+             "    -b  hide bikes, bins and people\n"
+             "    -p  hide power lines\n"
              "    -r  hide rail tracks\n"
              "    -s  hide street lights\n"
              "    -w  hide highway lights\n"

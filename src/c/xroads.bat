@@ -1,11 +1,9 @@
 @echo off
 
-rem stands for "remark" or comment to show examples !!
-
-rem show xroads help and cmd line options
+rem show xroads cmd line options
 rem xroads.exe -h
 
-rem print additional debug information
+rem show xroads debug information
 rem xroads.exe -d
 
 rem create log file from output for debugging
@@ -17,15 +15,23 @@ rem xroads.exe -v 80
 rem hide rail tracks
 rem xroads.exe -r
 
-rem hide lights on primary and secondary streets 
+rem hide power lines 
+rem xroads.exe -p
+
+rem hide bikes, bins and people
+rem xroads.exe -b
+
+rem hide street lights
 rem xroads.exe -s
-rem xroads.exe -s -s      ( hides even more lights )
 
 rem hide highway lights
 rem xroads.exe -w
 
-rem example of how to combine multiple options
-rem xroads.exe -v 80 -r -s
+rem force X-Plane default roads
+rem xroads.exe -x
+
+rem an example combination
+rem xroads.exe -v 80 -w -s -p -x
 
 rem use xroads default settings
 xroads.exe

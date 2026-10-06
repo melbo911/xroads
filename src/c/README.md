@@ -27,18 +27,19 @@ Xroads "help" and command line options (macos example):
 
 
    % ./xroads
-   Xroads - 0.51 - melbo @x-plane.org
+   Xroads - 0.53 - melbo @x-plane.org
 
-      usage: ./xroads.app [-v velocity] [-p] [-r] [-s] [-w] [-d] [-h]
+   usage: ./xroads.app [-v velocity] [-b] [-p] [-r] [-s] [-w] [-d] [-h] [-x]
 
-        -v  set percentage of default car velocity
-        -p  hide people, bikes and bins
-        -r  hide rail tracks
-        -s  hide street lights
-        -w  hide highway lights
-        -d  print debug information
-        -h  this help
-
+    -v  set percentage of default car velocity
+    -b  hide bikes, bins and people
+    -p  hide power lines
+    -r  hide rail tracks
+    -s  hide street lights
+    -w  hide highway lights
+    -x  use X-Planes road network
+    -d  print debug information
+    -h  this help
 
 
 # Installation
