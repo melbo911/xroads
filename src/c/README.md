@@ -76,6 +76,12 @@ macOS or Linux:
 
 	make xroads
 
+macOS universal binary:
+
+    cc xroads.c -o xroads.x86_app -target x86_64-apple-macos10.12
+    cc xroads.c -o xroads.arm_app -target arm64-apple-macos11
+    lipo -create -output xroads.app xroads.x86_app xroads.arm_app
+
 
 
 # Left-Hand-Driving Support 
